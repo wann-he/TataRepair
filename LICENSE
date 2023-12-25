@@ -1,0 +1,69 @@
+TaTa 软件许可协议
+
+版权所有 (c) wann-he
+
+特此免费授予任何获得本软件副本和相关文档文件（"软件"）的人不受限制地
+处置本软件的权利，包括但不限于使用、复制、修改、合并、发布、分发、
+再授权和/或销售本软件副本，但须受以下条件约束：
+
+1. 非商用限制：本软件本身仅供学习和日常使用，不得直接用于商业目的。
+   直接使用本软件（包括但不限于分发本软件原始副本）进行商业活动需获得
+   作者另行授权。
+
+2. 二次开发：允许对本软件进行修改和二次开发，二次开发的衍生作品可用于
+   商业目的，但本作者不对二次开发的软件承担任何后果和责任。
+
+3. 上游许可：本软件使用了以下第三方组件，使用者须同时遵守其各自许可：
+   - FFmpeg (https://github.com/FFmpeg/FFmpeg) —— GNU General Public License (GPL)
+   - Real-ESRGAN (https://github.com/xinntao/Real-ESRGAN) —— BSD 3-Clause License
+   - SRMD (https://github.com/cszn/SRMD) —— 相关许可
+
+4. 版权声明：在所有副本或重要部分中必须包含本版权声明和许可声明。
+
+5. 免责声明：本软件按"原样"提供，不作任何明示或暗示的保证，包括但不限于
+   适销性、特定用途的适用性和非侵权性。在任何情况下，作者或版权持有人
+   均不对任何索赔、损害或其他责任负责，无论是在合同诉讼、侵权行为还是
+   其他方面，由软件或软件的使用或其他交易引起、由此产生或与之相关。
+
+6. 隐私声明：本软件没有任何读取用户隐私的程序，不会收集或上传任何用户数据。
+
+---
+
+TaTa Software License
+
+Copyright (c) wann-he
+
+Permission is hereby granted, free of charge, to any person obtaining a copy
+of this software and associated documentation files (the "Software"), to deal
+in the Software without restriction, including without limitation the rights
+to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
+copies of the Software, subject to the following conditions:
+
+1. Non-Commercial Use: The Software itself is provided for learning and
+   personal use only. Direct commercial use of the Software (including but
+   not limited to distributing original copies of the Software) requires
+   separate authorization from the author.
+
+2. Derivative Works: Modification and derivative works of the Software are
+   permitted and may be used for commercial purposes. However, the author
+   assumes no responsibility or liability for any derivative software.
+
+3. Upstream Licenses: This Software incorporates the following third-party
+   components, each governed by its respective license:
+   - FFmpeg (https://github.com/FFmpeg/FFmpeg) — GNU General Public License (GPL)
+   - Real-ESRGAN (https://github.com/xinntao/Real-ESRGAN) — BSD 3-Clause License
+   - SRMD (https://github.com/cszn/SRMD) — applicable license
+
+4. Copyright Notice: The above copyright notice and this permission notice
+   shall be included in all copies or substantial portions of the Software.
+
+5. Disclaimer: THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY
+   KIND, EXPRESS OR IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF
+   MERCHANTABILITY, FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN
+   NO EVENT SHALL THE AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM,
+   DAMAGES OR OTHER LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR
+   OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE
+   USE OR OTHER DEALINGS IN THE SOFTWARE.
+
+6. Privacy: This Software does not contain any programs that read user privacy,
+   and does not collect or upload any user data.

@@ -1,0 +1,123 @@
+$border-radius: 10px;
+$title-bar-height: 20px;
+$title-aside: 220px;
+* {
+  margin: 0;
+  padding: 0;
+  //color: #fff;
+  //禁止用户复制
+  user-select: none;
+  box-sizing: border-box;
+}
+svg {
+  fill: var(--af-default-font-color);
+}
+//:root {
+//  --bg-color: #21242a;
+//  --bg-color-light: #fff;
+//}
+#app {
+  background-color: var( --af-bg-color);
+  min-width: 800px;
+  border-radius: $border-radius;
+  overflow: hidden;
+  //opacity: 0;
+}
+
+.titlebar {
+  height: 50px;
+  background: var( --af-bg-color);
+  user-select: none;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  position: fixed;
+  top: 0;
+  left: 0;
+  right: 0;
+  z-index: 2;
+  // border-top-left-radius: $border-radius;
+  // border-top-right-radius: $border-radius;
+  padding: 0 20px 0 0;
+  overflow: hidden;
+}
+
+.titlebar-button {
+  display: inline-flex;
+  justify-content: center;
+  align-items: center;
+  width: $title-bar-height;
+  height: $title-bar-height;
+}
+
+// .titlebar-button:hover {
+//     background: #333;
+// }
+.titlebar-button img {
+  width: 18px;
+  height: 18px;
+  opacity: 0.5;
+}
+
+.titlebar-button {
+  //&:hover img {
+  //  opacity: 1;
+  //}
+
+  //&:hover {
+  //  background-color: var( --af-tag-check-color);
+  //}
+}
+
+.drop-area {
+  border: 1px dashed #ccc;
+  padding: 10px;
+  border-radius: 15px;
+}
+
+.drag-over {
+  border-color: #4caf50;
+  background-color: #f0f8ff;
+}
+
+.right-top-icon-container {
+  display: flex;
+  justify-content: flex-end;
+  position: absolute;
+  top: 10px; /* 距离顶部的距离 */
+  right: 10px; /* 距离右侧的距离 */
+  z-index: 1; /* 确保图标在上方 */
+}
+
+.left-bottom-icon-container {
+  pointer-events: none;
+  transition: all 0.3s ease;
+}
+.el-button {
+  pointer-events: auto;
+}
+
+.content-box {
+  background-color: var( --af-bg-color, 0.5);
+  margin: 12px 12px;
+  border-radius: 12px;
+  color: var( --af-bg-color);
+}
+
+.content-select-box {
+  height: 80px;
+  display: flex;
+  align-items: center;
+}
+
+.el-message-box {
+  p {
+    color: #000;
+  }
+}
+
+.title-aside {
+  width: $title-aside;
+  height: $title-bar-height;
+  background-color: var( --af-bg-color);
+}

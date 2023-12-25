@@ -1,0 +1,97 @@
+{
+  "$schema": "../node_modules/@tauri-apps/cli/schema.json",
+  "build": {
+    "beforeBuildCommand": "npm run build",
+    "beforeDevCommand": "npm run dev",
+    "frontendDist": "../dist",
+    "devUrl": "http://localhost:5173"
+  },
+  "bundle": {
+    "active": true,
+    "category": "DeveloperTool",
+    "copyright": "",
+    "targets": "all",
+    "externalBin": [
+      "bin/ffmpeg/ffmpeg",
+      "bin/ffmpeg/ffprobe",
+      "bin/realesrgan/realesrgan-ncnn-vulkan",
+      "bin/srmd/srmd-ncnn-vulkan"
+    ],
+    "icon": [
+      "icons/32x32.png",
+      "icons/128x128.png",
+      "icons/128x128@2x.png",
+      "icons/icon.icns",
+      "icons/icon.ico"
+    ],
+    "windows": {
+      "certificateThumbprint": null,
+      "digestAlgorithm": "sha256",
+      "timestampUrl": "",
+      "wix": {
+        "language": [
+          "zh-CN"
+        ]
+      }
+    },
+    "longDescription": "",
+    "macOS": {
+      "entitlements": null,
+      "exceptionDomain": "",
+      "frameworks": [],
+      "providerShortName": null,
+      "signingIdentity": null
+    },
+    "resources": [
+      "bin",
+      "models",
+      "models-srmd",
+      "conf"
+    ],
+    "shortDescription": "",
+    "linux": {
+      "deb": {
+        "depends": []
+      }
+    }
+  },
+  "productName": "TaTa",
+  "mainBinaryName": "TaTa",
+  "version": "0.0.10",
+  "identifier": "com.minority.dev",
+  "plugins": {
+    "shell": {
+      "open" : "*"
+    }
+  },
+  "app": {
+    "withGlobalTauri": true,
+    "windows": [
+      {
+        "fullscreen": false,
+        "resizable": true,
+        "title": "TaTa",
+        "height": 768,
+        "width": 1000,
+        "transparent": false,
+        "decorations": false,
+        "minWidth": 800,
+        "minHeight": 512,
+        "shadow": true,
+        "visible": true,
+        "center": true,
+        "dragDropEnabled": false,
+        "useHttpsScheme": true
+      }
+    ],
+    "security": {
+      "assetProtocol": {
+        "scope": [
+          "*"
+        ],
+        "enable": true
+      },
+      "csp": "default-src: 'self'; media-src 'self' asset:; connect-src ipc: http://ipc.localhost"
+    }
+  }
+}
