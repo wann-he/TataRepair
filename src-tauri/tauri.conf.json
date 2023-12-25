@@ -1,0 +1,107 @@
+{
+    "$schema": "../node_modules/@tauri-apps/cli/schema.json",
+    "build": {
+        "beforeBuildCommand": "yarn build",
+        "beforeDevCommand": "yarn dev",
+        "devPath": "http://localhost:5173",
+        "distDir": "../dist"
+    },
+    "package": {
+        "productName": "TATA图片高清修复器",
+        "version": "0.0.1"
+    },
+    "tauri": {
+        "allowlist": {
+            "all": true,
+            "shell": {
+                "sidecar": true,
+                "execute": true,
+                "open": "",
+                "scope": [
+                    {
+                        "name": "bin/ffmpeg/ffmpeg",
+                        "args": true,
+                        "sidecar": true
+                    },
+                    {
+                        "name": "bin/ffmpeg/ffprobe",
+                        "args": true,
+                        "sidecar": true
+                    },
+                    {
+                        "name": "bin/realesrgan/realesrgan-ncnn-vulkan",
+                        "args": true,
+                        "sidecar": true
+                    }
+                ]
+            },
+            "protocol": {
+                "asset": true,
+                "assetScope": ["*"]
+            },
+            "fs": {
+                "scope": ["C:/**/*", "D:/**/*", "E:/**/*", "F:/**/*"]
+            }
+        },
+        "bundle": {
+            "active": true,
+            "category": "DeveloperTool",
+            "copyright": "",
+            "deb": {
+                "depends": []
+            },
+            "externalBin": [
+                "bin/ffmpeg/ffmpeg",
+                "bin/ffmpeg/ffprobe",
+                "bin/realesrgan/realesrgan-ncnn-vulkan"
+            ],
+            "icon": [
+                "icons/32x32.png",
+                "icons/128x128.png",
+                "icons/128x128@2x.png",
+                "icons/icon.icns",
+                "icons/icon.ico"
+            ],
+            "identifier": "com.minority.dev",
+            "longDescription": "",
+            "macOS": {
+                "entitlements": null,
+                "exceptionDomain": "",
+                "frameworks": [],
+                "providerShortName": null,
+                "signingIdentity": null
+            },
+            "resources": ["models"],
+            "shortDescription": "",
+            "targets": "all",
+            "windows": {
+                "certificateThumbprint": null,
+                "digestAlgorithm": "sha256",
+                "timestampUrl": "",
+                "wix": {
+                    "language": ["zh-CN"]
+                }
+            }
+        },
+        "security": {
+            "csp": "default-src: 'self'; media-src 'self' asset:"
+        },
+        "updater": {
+            "active": false
+        },
+        "windows": [
+            {
+                "fullscreen": false,
+                "height": 700,
+                "resizable": true,
+                "title": "TaTaRepair",
+                "width": 900,
+                "decorations": false,
+                "minWidth": 900,
+                "minHeight": 700,
+                "center": true,
+                "transparent": true
+            }
+        ]
+    }
+}
