@@ -8,7 +8,7 @@
     <div>
         &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;本软件允许二次开发商用, 但是本作者不对二次开发的软件承担任何后果。
     </div>
-    <p style="margin-top: 20px">@本项目地址: https://github.com/Minori-ty/mp4To4K-rust</p>
+    <p style="margin-top: 20px">@本项目地址: https://github.com/wann-he/TataRepair.git</p>
     <p>@ffmpeg项目地址: https://github.com/FFmpeg/FFmpeg</p>
     <p>@Real-ESRGAN项目地址: https://github.com/xinntao/Real-ESRGAN</p>
     <p style="margin: 20px 0; text-align: center">

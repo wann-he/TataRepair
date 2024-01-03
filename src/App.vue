@@ -3,9 +3,9 @@
         <div data-tauri-drag-region class="titlebar">
             <div data-tauri-drag-region class="title-aside"></div>
             <div>
-                <div class="titlebar-button" id="titlebar-help" @click="goToCopyright">
-                    <img src="./assets/问号.svg" alt="minimize" />
-                </div>
+<!--                <div class="titlebar-button" id="titlebar-help" @click="goToCopyright">-->
+<!--                    <img src="./assets/问号.svg" alt="minimize" />-->
+<!--                </div>-->
                 <div class="titlebar-button" id="titlebar-minimize" @click="minimize">
                     <img src="./assets/最小化.svg" alt="minimize" />
                 </div>
