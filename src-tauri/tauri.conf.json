@@ -7,7 +7,7 @@
         "distDir": "../dist"
     },
     "package": {
-        "productName": "TATA图片高清修复器",
+        "productName": "TaTa图片高清修复",
         "version": "0.0.1"
     },
     "tauri": {

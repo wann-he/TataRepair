@@ -36,6 +36,7 @@ export interface MConfig {
     model: string;
     outscale: number;
     outpath?: string; // 图片输出路径
+    prefix?: string; // 图片名前缀
 }
 
 export const TMP_IMG_DIR = "tmp_img";
@@ -141,6 +142,7 @@ export async function merge2Video(mconfig: MConfig, basePath: string, outPath: s
 // ./realesrgan-ncnn-vulkan.exe -i input.jpg -o output.png
 export async function imgTo4k(mconfig: MConfig, basePath: string, img: Image): Promise<{ rcode: number | null }> {
     const o_path = mconfig.outpath || '';
+    const img_prefix = mconfig.prefix || '';
 
     await readDir(`${basePath}/${o_path}`).catch(() => {
         createDir(`${basePath}/${o_path}`)
@@ -149,7 +151,7 @@ export async function imgTo4k(mconfig: MConfig, basePath: string, img: Image): P
     // console.log(mconfig.outscale)
     const filename = basename(img.name);
     const command = Command.sidecar("bin/realesrgan/realesrgan-ncnn-vulkan",
-        ['-i', img.name, '-o', `${basePath}\\${o_path}\\${filename}`, '-n', mconfig.model, '-s', mconfig.outscale + '', '-v']);
+        ['-i', img.name, '-o', `${basePath}\\${o_path}\\${img_prefix}${filename}`, '-n', mconfig.model, '-s', mconfig.outscale + '', '-v']);
     command.on('close', () => {
         console.log('任务完成')
     })

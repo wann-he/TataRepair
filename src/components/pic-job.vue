@@ -144,6 +144,7 @@ const mConfig = computed(() => {
     return {
         model: model.value,
         outscale: multiple.value,
+        prefix: 'tata4kk_',
     };
 });
 
