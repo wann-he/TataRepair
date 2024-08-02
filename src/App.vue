@@ -3,28 +3,40 @@
         <div data-tauri-drag-region class="titlebar">
             <div data-tauri-drag-region class="title-aside"></div>
             <div>
-<!--                <div class="titlebar-button" id="titlebar-help" @click="goToCopyright">-->
-<!--                    <img src="./assets/问号.svg" alt="minimize" />-->
-<!--                </div>-->
+                <!--                <div class="titlebar-button" id="titlebar-help" @click="goToCopyright">-->
+                <!--                    <img src="./assets/问号.svg" alt="minimize" />-->
+                <!--                </div>-->
                 <div class="titlebar-button" id="titlebar-minimize" @click="minimize">
-                    <img src="./assets/最小化.svg" alt="minimize" />
+                    <img src="./assets/最小化.svg" alt="minimize"/>
                 </div>
                 <div class="titlebar-button" id="titlebar-maximize" @click="toggleMaximize">
-                    <img :src="isMax ? remin : max" alt="maximize" />
+                    <img :src="isMax ? remin : max" alt="maximize"/>
                 </div>
                 <div class="titlebar-button" id="titlebar-close" @click="closeApp">
-                    <img src="./assets/关闭.svg" alt="close" />
+                    <img src="./assets/关闭.svg" alt="close"/>
                 </div>
             </div>
         </div>
     </div>
     <el-container>
         <el-aside>
-            <div class="box title" @click="go2Pic">
-                <el-icon><PictureFilled /></el-icon> <span style="padding-left: 10px; color: #111">图片修复</span>
+            <div class="box title" :class="{ selected: currentSelected === 'pic' }" @click="select('pic')">
+                <el-icon>
+                    <PictureFilled/>
+                </el-icon>
+                <span style="padding-left: 10px; color: #111">图片修复</span>
             </div>
-            <div class="box title" @click="go2Video">
-                <el-icon><VideoCameraFilled /></el-icon> <span style="padding-left: 10px; color: #111">视频转4K</span>
+            <div class="box title" :class="{ selected: currentSelected === 'video' }" @click="select('video')">
+                <el-icon>
+                    <VideoCameraFilled/>
+                </el-icon>
+                <span style="padding-left: 10px; color: #111">视频转4K</span>
+            </div>
+            <div class="box title" :class="{ selected: currentSelected === 'file' }" @click="select('file')">
+                <el-icon>
+                    <VideoCameraFilled/>
+                </el-icon>
+                <span style="padding-left: 10px; color: #111">文件小工具</span>
             </div>
         </el-aside>
         <el-main>
@@ -38,14 +50,14 @@
 </template>
 
 <script setup lang="ts">
-import { ref } from 'vue'
-import { PictureFilled,VideoCameraFilled } from '@element-plus/icons-vue'
-import { minimize, closeApp } from './system'
+import {ref} from 'vue'
+import {PictureFilled, VideoCameraFilled} from '@element-plus/icons-vue'
+import {minimize, closeApp} from './system'
 import max from './assets/最大化.svg'
 import remin from './assets/还原.svg'
-import { appWindow } from '@tauri-apps/api/window'
-import { getffmpeg } from './script/getffmpeg'
-import { useRouter } from 'vue-router'
+import {appWindow} from '@tauri-apps/api/window'
+import {getffmpeg} from './script/getffmpeg'
+import {useRouter} from 'vue-router'
 
 const router = useRouter()
 
@@ -55,22 +67,32 @@ const ffmpegPath = ref('')
 /** realesrgan的路径 */
 const realesrgan = ref('')
 
+const currentSelected = ref('pic')
+
 /** 初始化时要做的事情 */
 async function init() {
     // 获取ffmpeg路径
     ;[ffmpegPath.value, realesrgan.value] = await getffmpeg()
 }
+
 init()
 
 function goToCopyright() {
     router.push('/copyright')
 }
+
 function go2Video() {
     router.push('/video-job')
 }
+
 function go2Pic() {
     router.push('/pic-job')
 }
+
+function go2File() {
+    router.push('/file-job')
+}
+
 /**
  * 切换面板
  * @param tab
@@ -90,6 +112,23 @@ function toggleMaximize() {
     appWindow.toggleMaximize()
     isMax.value = !isMax.value
 }
+
+function select(type: 'pic' | 'video' | 'file') {
+    currentSelected.value = type;
+    switch (type) {
+        case 'pic':
+            go2Pic();
+            break;
+        case 'video':
+            go2Video();
+            break;
+        case 'file':
+            go2File();
+            break;
+        default:
+            break;
+    }
+}
 </script>
 
 <style scoped lang="scss">
@@ -99,6 +138,7 @@ function toggleMaximize() {
     border-radius: 9px;
     color: #685479;
 }
+
 .el-card {
     width: 500px;
 }
@@ -112,7 +152,7 @@ function toggleMaximize() {
 .title {
     width: 170px;
     height: 50px;
-     margin-top: 20px;
+    margin-top: 20px;
     text-align: center;
     line-height: 50px;
     display: flex;
@@ -120,6 +160,7 @@ function toggleMaximize() {
     justify-content: center;
     cursor: pointer;
 }
+
 .select-box {
     height: 150px;
     display: flex;
@@ -134,23 +175,32 @@ function toggleMaximize() {
     cursor: pointer;
     color: #111;
 }
+
 .select-button {
     background-color: #01c2ce;
     @extend %btn;
+
     &:hover {
         box-shadow: 0px 0px 5px #01c2ce;
     }
 }
+.selected {
+    background-color: #01c2ce; /* 选择的颜色 */
+}
+
 .default-button {
     background-color: #555;
     @extend %btn;
+
     &:hover {
         box-shadow: 0px 0px 5px #444;
     }
 }
+
 .start-button {
     background-color: #409eff;
     @extend %btn;
+
     &:hover {
         box-shadow: 0px 0px 5px #409eff;
     }

@@ -1,6 +1,7 @@
 import {ref} from "vue";
 
 export const ModelVal = ref<'realesrgan-x4plus' | 'reaesrnet-x4plus' | 'realesrgan-x4plus-anime' | 'realesr-animevideov3'>('realesrgan-x4plus')
+export const ChatModelVal = ref<'gpt3.5' | 'gpt-4o' | 'qwen' >('gpt3.5')
 export const MultipleVal = ref<2 | 3 | 4>(4)
 export const MultipleOptions = [
     {
@@ -35,6 +36,16 @@ export const ModelOptions = [
     },
 ]
 
+export const ChatModelOptions = [
+    {
+        value: 'gpt3.5',
+        label: 'gpt3.5',
+    },
+    {
+        value: 'gpt-4o',
+        label: 'gpt-4o',
+    },
+]
 
 export const  CodingModeOptions = [
     {

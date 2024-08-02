@@ -1,7 +1,10 @@
-import {createDir, readDir, removeDir} from '@tauri-apps/api/fs'
+import {BaseDirectory, createDir, FileEntry, readDir, removeDir, renameFile} from '@tauri-apps/api/fs'
 import {Command} from '@tauri-apps/api/shell'
 import {basename} from 'pathe'
-import {convertFileSrc} from "@tauri-apps/api/tauri";
+import {path} from "@tauri-apps/api";
+import {join} from "@tauri-apps/api/path";
+
+// import {convertFileSrc} from "@tauri-apps/api/tauri";
 
 export interface Image {
     url: string;
@@ -43,50 +46,43 @@ export const TMP_IMG_DIR = "tmp_img";
 export const TMP_4K_DIR = "tmp_img_4k";
 export const INIT_STAGES: Stage[] = []
 
-
-export async function mp4ToImgV2(mconfig: MConfig, basePath: string, vd: Videoo): Promise<{
-    images: Image[];
+export async function upgradeFile2Curr(fileDir: string, recursively: boolean, delSubAfter: boolean): Promise<{
     rcode: number | null
 }> {
-    console.log('============ 开始提取视频帧 ============')
-    await readDir(`${basePath}/${TMP_IMG_DIR}`).catch(() => {
-        createDir(`${basePath}/${TMP_IMG_DIR}`)
-    })
-    // console.log(mconfig.model)
-    // console.log(mconfig.outscale)
-    const filename = basename(vd.name);
-    console.log('basename =====> ' + filename)
-    console.log('path =====> ' + vd.name)
-    console.log('url =====> ' + vd.url)
-    // const cmd = `${ffmpegPath} -i ${file} -qscale:v 1 -qmin 1 -qmax 1 -vsync 0 ${basePath}/test/frame%08d.png`
-    const command = Command.sidecar("bin/ffmpeg/ffmpeg",
-        ['-i', vd.name,
-            '-qscale:v', '1',
-            '-qmin', '1',
-            '-vsync', '0',
-            `${basePath}\\${TMP_IMG_DIR}\\frame%08d.png`]);
+    console.log('============ upgradeFile2Curr ============')
+    console.log(fileDir)
+    console.log(recursively)
 
-    console.log(command)
+    const entries = await readDir(fileDir, {recursive: recursively});
 
-    command.on('close', () => {
-        console.log('任务完成-mp4ToImgV2')
-    })
-    command.on('error', error => console.error(`command error: "${error}"`));
-    command.stdout.on('data', line => console.log(`command stdout: "${line}"`));
-    command.stderr.on('data', (line) => {
-        console.log(line)
-    })
-    const output = await command.execute()
-    console.log('output.code ==> ' + output.code)
+    async function processEntries(entries: any) {
+        for (const entry of entries) {
+            console.log(`Entry: ${entry.path}`);
+            console.log(`Entry-name: ${entry.name}`);
+            if (entry.children) {
+                await processEntries(entry.children)
+                await removeDir(entry.path, {recursive: true}).catch((reason) => {
+                    console.log(`删除子文件夹${entry.path}失败：${reason}`)
+                })
+            } else {
+                const newPath = await join(fileDir, entry.name);
+                await renameFile(entry.path, newPath);
+            }
+        }
+    }
 
-    const imgs = await getImages(`${basePath}\\tmp_img`)
-    console.log(imgs)
+    await processEntries(entries);
 
-    return {rcode: output.code, images: imgs}
+    return {rcode: 1};
+}
+
+function convertFileSrc(filePath: string): string {
+    // 假设这是一个将文件路径转换为可直接访问的 URL 的函数
+    return filePath;
 }
 
 
-async function getImages(fileDir: string): Promise<Image[]> {
+async function getFiles(fileDir: string): Promise<Image[]> {
     const entries = await readDir(fileDir);
     const imgArr: Image[] = []
     entries.forEach(file => {
@@ -139,7 +135,6 @@ export async function merge2Video(mconfig: MConfig, basePath: string, outPath: s
     return {rcode: output.code}
 }
 
-// ./realesrgan-ncnn-vulkan.exe -i input.jpg -o output.png
 export async function imgTo4k(mconfig: MConfig, basePath: string, img: Image): Promise<{ rcode: number | null }> {
     const o_path = mconfig.outpath || '';
     const img_prefix = mconfig.prefix || '';

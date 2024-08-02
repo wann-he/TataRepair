@@ -16,6 +16,10 @@ const router = createRouter({
             component: () => import('../components/video-job.vue'),
         },
         {
+            path: '/file-job',
+            component: () => import('../components/file-job.vue'),
+        },
+        {
             path: '/copyright',
             component: () => import('../components/copyright.vue'),
         },

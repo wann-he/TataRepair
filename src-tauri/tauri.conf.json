@@ -19,17 +19,17 @@
                 "open": "",
                 "scope": [
                     {
-                        "name": "bin/ffmpeg/ffmpeg",
+                        "name": "./bin/ffmpeg/ffmpeg",
                         "args": true,
                         "sidecar": true
                     },
                     {
-                        "name": "bin/ffmpeg/ffprobe",
+                        "name": "./bin/ffmpeg/ffprobe",
                         "args": true,
                         "sidecar": true
                     },
                     {
-                        "name": "bin/realesrgan/realesrgan-ncnn-vulkan",
+                        "name": "./bin/realesrgan/realesrgan-ncnn-vulkan",
                         "args": true,
                         "sidecar": true
                     }
@@ -40,7 +40,17 @@
                 "assetScope": ["*"]
             },
             "fs": {
-                "scope": ["C:/**/*", "D:/**/*", "E:/**/*", "F:/**/*"]
+                "scope": ["C:/**/*", "D:/**/*", "E:/**/*", "F:/**/*"],
+                "all": true,
+                "readFile": true,
+                "writeFile": true,
+                "readDir": true,
+                "copyFile": true,
+                "createDir": true,
+                "removeDir": true,
+                "removeFile": true,
+                "renameFile": true,
+                "exists": true
             }
         },
         "bundle": {
@@ -102,6 +112,9 @@
                 "center": true,
                 "transparent": true
             }
-        ]
+        ],
+        "systemTray": {
+            "iconPath": "icons/icon.ico"
+        }
     }
 }

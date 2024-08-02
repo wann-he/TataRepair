@@ -26,3 +26,4 @@ dist-ssr
 realesrgan
 ffmpeg
 .cosine
+/src-tauri/src-tauri_bin&models.zip

@@ -8,17 +8,17 @@ export function minimize() {
 }
 
 export async function closeApp() {
-    await Promise.all(
-        pids.map(async (pid) => {
-            return new Promise((resolve) => {
-                const cmd = `taskkill /f /t /pid ${pid}`
-                const command = new Command('ffmpeg', ['/C', cmd])
-                command.spawn()
-                command.on('close', () => {
-                    resolve(0)
-                })
-            })
-        })
-    )
-    appWindow.close()
+    // await Promise.all(
+    //     pids.map(async (pid) => {
+    //         return new Promise((resolve) => {
+    //             const cmd = `taskkill /f /t /pid ${pid}`
+    //             const command = new Command('ffmpeg', ['/C', cmd])
+    //             command.spawn()
+    //             command.on('close', () => {
+    //                 resolve(0)
+    //             })
+    //         })
+    //     })
+    // )
+    appWindow.hide()
 }
