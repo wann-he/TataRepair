@@ -21,85 +21,122 @@
         </el-space>
 
         <div class="box path-box">
+            <el-space :size="'default'" spacer="" style="margin-top: 10px" direction="vertical" alignment="flex-start">
+                <el-row :gutter="24">
+                    <!--                <el-col :span="12">-->
+                    <!--                    <el-form-item label="操作模式">-->
+                    <!--                        <el-select v-model="suffixVal" class="m-2" placeholder="文件操作模式" size="default">-->
+                    <!--                            <el-option v-for="item in suffixOptions" :key="item.value" :label="item.label"-->
+                    <!--                                       :value="item.value"/>-->
+                    <!--                        </el-select>-->
+                    <!--                    </el-form-item>-->
+                    <!--                </el-col>-->
+                    <el-col :span="12" v-show="checked1">
+                        <el-form-item label="递归">
+                            <el-switch v-model="recursively"/>
+                        </el-form-item>
+                    </el-col>
+                    <el-col :span="12" v-show="checked1">
+                        <el-form-item label="完成后删除子文件夹">
+                            <el-switch v-model="delSubAfter"/>
+                        </el-form-item>
+                    </el-col>
+                    <el-col :span="24" v-show="checked2">
+                        <el-form-item label="替换文本">
+                            <el-col :span="18">
+                                <el-input v-model="tobe_replaced" class="m-2" placeholder="替换字符串"
+                                          size="default"
+                                          clearable>
+                                    <template #append>
+                                        <el-select v-model="replaceType" class="m-2" placeholder="替换模式"
+                                                   @change="replaceTypeChange" style="width: 150px">
+                                            <el-option v-for="item in ReplaceTypeOptions" :key="item.value"
+                                                       :label="item.label"
+                                                       :value="item.value"/>
+                                        </el-select>
+                                    </template>
+                                </el-input>
+                            </el-col>
+                            <el-col :span="2">
+                                <el-input-number size="small" v-model="num" :min="1" :max="40" v-show="numShow"/>
 
-            <el-row :gutter="24">
-                <el-col :span="12">
-                    <el-form-item label="操作模式">
-                        <el-select v-model="suffixVal" class="m-2" placeholder="文件操作模式" size="default">
-                            <el-option v-for="item in suffixOptions" :key="item.value" :label="item.label"
-                                       :value="item.value"/>
-                        </el-select>
-                    </el-form-item>
-                </el-col>
-                <el-col :span="12">
-                    <el-form-item label="递归">
-                        <el-switch v-model="recursively"/>
-                    </el-form-item>
-                </el-col>
-                <el-col :span="12">
-                    <el-form-item label="完成后删除子文件夹">
-                        <el-switch v-model="delSubAfter"/>
-                    </el-form-item>
-                </el-col>
+                            </el-col>
+                            <el-col :span="18">
+                                <el-input v-model="replaced_with" class="m-2" placeholder="替换为"
+                                          size="default"
+                                          clearable>
+                                </el-input>
+                            </el-col>
+                        </el-form-item>
+                    </el-col>
+                    <el-col :span="12" v-show="checked4">
+                        <el-form-item label="选择AI模型">
+                            <el-select v-model="model" class="m-2" placeholder="选择模型" size="default">
+                                <el-option v-for="item in ChatModelOptions" :key="item.value" :label="item.label"
+                                           :value="item.value"/>
+                            </el-select>
+                        </el-form-item>
+                    </el-col>
+                </el-row>
+                <el-row :gutter="24">
+                    <el-col :span="24">
+                        <el-form-item label="文件路径">
+                            <el-col :span="20">
+                                <el-input v-model="out_path" class="m-2" placeholder="选择操作文件夹/文件"
+                                          :disabled="true"
+                                          @click="selectOutDir"
+                                          size="default"
+                                          clearable>
+                                    <template #append>
+                                        <el-button @click="selectOutDir" type="primary" style="width: 115px"
+                                                   class="m-2">点击此处选择
+                                        </el-button>
+                                    </template>
+                                </el-input>
+                            </el-col>
+                            <el-col :span="2">
+                                <el-button @click="openOutDir" type="primary" link :disabled="!out_path">打开
+                                </el-button>
+                            </el-col>
+                        </el-form-item>
+                    </el-col>
 
-                <el-col :span="12" v-show="checked4">
-                    <el-form-item label="选择AI模型">
-                        <el-select v-model="model" class="m-2" placeholder="选择模型" size="default">
-                            <el-option v-for="item in ChatModelOptions" :key="item.value" :label="item.label"
-                                       :value="item.value"/>
-                        </el-select>
-                    </el-form-item>
-                </el-col>
-            </el-row>
-            <el-row :gutter="24">
-                <el-col :span="20">
-                    <el-input v-model="out_path" class="m-2" placeholder="选择操作文件夹/文件" :disabled="true"
-                              @click="selectOutDir"
-                              size="default"
-                              clearable>
-                        <template #prepend>
-                            <el-button @click="selectOutDir" type="primary">点击此处选择</el-button>
-                        </template>
-                    </el-input>
-                </el-col>
-                <el-col :span="2">
-                    <el-button @click="openOutDir" type="primary" link :disabled="!out_path">打开
-                    </el-button>
-                </el-col>
-                <el-col :span="18"></el-col>
-                <el-col :span="6">
+                    <el-col :span="18"></el-col>
+                    <el-col :span="6">
 
-                </el-col>
+                    </el-col>
 
-            </el-row>
-            <!--            </el-form>-->
+                </el-row>
+            </el-space>
         </div>
 
         <div class="box">
-<!--            <div class="box select-button" @click="select">+ 选择视频</div>-->
-<!--            <div class="box" :class="[path ? 'start-button' : 'default-button']" @click="start">开始转码</div>-->
+            <!--            <div class="box select-button" @click="select">+ 选择视频</div>-->
+            <!--            <div class="box" :class="[path ? 'start-button' : 'default-button']" @click="start">开始转码</div>-->
             <div style="float: right">
-                <el-button @click="startJob" type="primary" link :disabled="!out_path" v-show="checked1" >开始文件提级
+                <el-button @click="startJob(1)" type="primary" link :disabled="!out_path" v-show="checked1">开始文件提级
+                </el-button>
+                <el-button @click="startJob(2)" type="primary" link :disabled="!out_path" v-show="checked2">替换
                 </el-button>
             </div>
         </div>
 
 
-<!--        <el-tabs v-model="activeName" class="demo-tabs" @tab-click="handleClick">-->
-<!--            <el-tab-pane label="任务列表" name="first">-->
-<!--                <el-row :gutter="24">-->
-<!--                    <el-col :span="24">-->
-<!--                        <el-button @click="clearDoneAll" type="primary" link style="float: right">清空列表-->
-<!--                        </el-button>-->
-<!--                    </el-col>-->
-<!--                </el-row>-->
-<!--                <el-row :gutter="24">-->
-<!--                    <el-col :span="24">-->
-<!--                        <VideoCard :videos="videos"/>-->
-<!--                    </el-col>-->
-<!--                </el-row>-->
-<!--            </el-tab-pane>-->
-<!--        </el-tabs>-->
+        <!--        <el-tabs v-model="activeName" class="demo-tabs" @tab-click="handleClick">-->
+        <!--            <el-tab-pane label="任务列表" name="first">-->
+        <!--                <el-row :gutter="24">-->
+        <!--                    <el-col :span="24">-->
+        <!--                        <el-button @click="clearDoneAll" type="primary" link style="float: right">清空列表-->
+        <!--                        </el-button>-->
+        <!--                    </el-col>-->
+        <!--                </el-row>-->
+        <!--                <el-row :gutter="24">-->
+        <!--                    <el-col :span="24">-->
+        <!--                        <VideoCard :videos="videos"/>-->
+        <!--                    </el-col>-->
+        <!--                </el-row>-->
+        <!--            </el-tab-pane>-->
+        <!--        </el-tabs>-->
     </el-scrollbar>
 </template>
 
@@ -109,7 +146,7 @@ import {open} from '@tauri-apps/api/dialog'
 import {appDir} from '@tauri-apps/api/path'
 import type {TabsPaneContext} from 'element-plus'
 import {ElMessage} from 'element-plus'
-import {upgradeFile2Curr} from '../script/filetools'
+import {FConfig, replaceFilename, upgradeFile2Curr} from '../script/filetools'
 import {convertFileSrc} from '@tauri-apps/api/tauri'
 import {
     getVideoInfo,
@@ -118,18 +155,13 @@ import {
     MConfig,
     merge2Video,
     mp4ToImgV2,
+    Result,
     ThreadPool,
     TMP_4K_DIR,
     Videoo
 } from "../script/mp4ToImg";
-import VideoCard from "./video-card.vue";
 import {open as shellopen} from "@tauri-apps/api/shell";
-import {
-    ChatModelOptions, ChatModelVal,
-    CodingModeOptions,
-    MultipleOptions,
-    MultipleVal
-} from "../script/constants";
+import {ChatModelOptions, ChatModelVal, MultipleVal, ReplaceTypeOptions, ReplaceTypeVal} from "../script/constants";
 
 
 const checked1 = ref(false)
@@ -196,6 +228,7 @@ const onChange5 = (status: boolean) => {
 }
 
 const model = ChatModelVal
+const replaceType = ReplaceTypeVal
 const multiple = MultipleVal
 const codingModeVal = ref<'libx264' | 'hevc_nvenc'>('libx264')
 
@@ -231,6 +264,10 @@ const handleClick = (tab: TabsPaneContext, event: Event) => {
 /** 选择的目录路径 */
 const path = ref('')
 const out_path = ref('')
+const tobe_replaced = ref('')
+const replaced_with = ref('')
+const num = ref(1)
+const numShow = ref(false)
 
 /** 选择目录 */
 async function select() {
@@ -433,9 +470,49 @@ const openOutDir = () => {
     // invoke<string[]>('open_out_dir', {path: path.value})
 }
 
-const startJob = () => {
-    console.log("startJob.")
-    upgradeFile2Curr(out_path.value, recursively.value);
+const res: Result = {rcode: -1};
+
+const startJob = (type: number) => {
+    console.log("startJob." + type)
+    if (type == 1) {
+        upgradeFile2Curr(out_path.value, recursively.value, delSubAfter.value).then(res => {
+            if (res.rcode == 1) {
+                ElMessage({
+                    message: '文件提级成功',
+                    type: 'success'
+                })
+            }
+            return
+        }).finally();
+    }
+    if (type == 2) {
+        const fconfig: FConfig = {
+            tobe_replaced: tobe_replaced.value,
+            replaced_with: replaced_with.value,
+            type: replaceType.value,
+            num: num.value
+        }
+        replaceFilename(out_path.value, fconfig)
+            .then(res => {
+                if (res.rcode == 1) {
+                    ElMessage({
+                        message: res.failedNum > 0 ? '批量重命名完成,' + res.failedNum + '个失败' : '文件批量重命名成功',
+                        type: 'success'
+                    })
+                }
+                return
+            })
+            .finally();
+    }
+}
+
+const replaceTypeChange = (value: number) => {
+    if (value == 3 || value == 4 || value == 5) {
+        numShow.value = true
+    } else {
+        num.value = 1
+        numShow.value = false
+    }
 }
 
 // 禁止右键
@@ -493,8 +570,8 @@ document.oncontextmenu = function () {
 
 .path-box {
     height: 150px;
-    //display: flex;
-    //align-items: center;
+    display: list-item;
+    align-items: center;
     padding: 5px 15px;
 }
 

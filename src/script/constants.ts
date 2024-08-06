@@ -2,6 +2,7 @@ import {ref} from "vue";
 
 export const ModelVal = ref<'realesrgan-x4plus' | 'reaesrnet-x4plus' | 'realesrgan-x4plus-anime' | 'realesr-animevideov3'>('realesrgan-x4plus')
 export const ChatModelVal = ref<'gpt3.5' | 'gpt-4o' | 'qwen' >('gpt3.5')
+export const ReplaceTypeVal = ref<1 | 2 | 3 | 4>(1)
 export const MultipleVal = ref<2 | 3 | 4>(4)
 export const MultipleOptions = [
     {
@@ -45,6 +46,37 @@ export const ChatModelOptions = [
         value: 'gpt-4o',
         label: 'gpt-4o',
     },
+]
+
+export const ReplaceTypeOptions = [
+    {
+        value: '1',
+        label: '精准匹配替换',
+    }
+    ,{
+        value: '2',
+        label: '正则替换',
+    }
+    ,{
+        value: '3',
+        label: '替换前x个字符',
+    }
+    ,{
+        value: '4',
+        label: '替换后x个字符',
+    }
+    ,{
+        value: '5',
+        label: '替换后x个字符(不改变文件后缀名)',
+    }
+    ,{
+        value: '6',
+        label: '添加前缀',
+    }
+    ,{
+        value: '7',
+        label: '添加后缀',
+    }
 ]
 
 export const  CodingModeOptions = [
