@@ -40,7 +40,7 @@
                 "assetScope": ["*"]
             },
             "fs": {
-                "scope": ["C:/**/*", "D:/**/*", "E:/**/*", "F:/**/*"],
+                "scope": ["$RESOURCE/*","C:/**/*", "D:/**/*", "E:/**/*", "F:/**/*"],
                 "all": true,
                 "readFile": true,
                 "writeFile": true,
@@ -81,7 +81,7 @@
                 "providerShortName": null,
                 "signingIdentity": null
             },
-            "resources": ["models"],
+            "resources": ["models","conf"],
             "shortDescription": "",
             "targets": "all",
             "windows": {

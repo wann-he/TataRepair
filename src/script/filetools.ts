@@ -22,6 +22,7 @@ export async function upgradeFile2Curr(fileDir: string, recursively: boolean, de
     console.log('============ upgradeFile2Curr ============')
     console.log(fileDir)
     console.log(recursively)
+    let failedNum = 0;
 
     const entries = await readDir(fileDir, {recursive: recursively});
 
@@ -29,14 +30,24 @@ export async function upgradeFile2Curr(fileDir: string, recursively: boolean, de
         for (const entry of entries) {
             console.log(`Entry: ${entry.path}`);
             console.log(`Entry-name: ${entry.name}`);
-            if (entry.children) {
+            if (entry.children && recursively) {
                 await processEntries(entry.children)
-                await removeDir(entry.path, {recursive: true}).catch((reason) => {
-                    console.log(`删除子文件夹${entry.path}失败：${reason}`)
-                })
+                if (delSubAfter) {
+                    await removeDir(entry.path, {})
+                        .then(() => {
+                            console.log(`删除子文件夹${entry.path}成功`)
+                        }).catch((reason) => {
+                            console.log(`删除子文件夹${entry.path}失败：${reason}`)
+                        })
+                }
             } else {
                 const newPath = await join(fileDir, entry.name);
-                await renameFile(entry.path, newPath);
+                await renameFile(entry.path, newPath).then(() => {
+                    console.log(`重命名${entry.path}成功，新路径：${newPath}`)
+                }).catch((reason) => {
+                    failedNum++;
+                    console.log(`重命名${entry.path}失败：${reason}`)
+                });
             }
         }
     }

@@ -6,6 +6,9 @@
                 <!--                <div class="titlebar-button" id="titlebar-help" @click="goToCopyright">-->
                 <!--                    <img src="./assets/问号.svg" alt="minimize" />-->
                 <!--                </div>-->
+                <div class="titlebar-button" id="titlebar-setting" @click="go2Setting">
+                    <span style="padding: 5px 5px; color: #f0f0f0">设置</span>
+                </div>
                 <div class="titlebar-button" id="titlebar-minimize" @click="minimize">
                     <img src="./assets/最小化.svg" alt="minimize"/>
                 </div>
@@ -91,6 +94,10 @@ function go2Pic() {
 
 function go2File() {
     router.push('/file-job')
+}
+
+function go2Setting() {
+    router.push('/setting')
 }
 
 /**

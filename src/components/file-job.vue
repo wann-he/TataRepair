@@ -23,14 +23,35 @@
         <div class="box path-box">
             <el-space :size="'default'" spacer="" style="margin-top: 10px" direction="vertical" alignment="flex-start">
                 <el-row :gutter="24">
-                    <!--                <el-col :span="12">-->
-                    <!--                    <el-form-item label="操作模式">-->
-                    <!--                        <el-select v-model="suffixVal" class="m-2" placeholder="文件操作模式" size="default">-->
-                    <!--                            <el-option v-for="item in suffixOptions" :key="item.value" :label="item.label"-->
-                    <!--                                       :value="item.value"/>-->
-                    <!--                        </el-select>-->
-                    <!--                    </el-form-item>-->
-                    <!--                </el-col>-->
+                    <el-col :span="24">
+                        <el-form-item label="文件路径">
+                            <el-col :span="20">
+                                <el-input v-model="out_path" class="m-2" placeholder="文件夹路径"
+                                          :disabled="true"
+                                          @click="selectOutDir"
+                                          size="default"
+                                          clearable>
+                                    <template #append>
+                                        <el-button @click="selectOutDir" type="default" style="width: 115px"
+                                                   class="m-2">点击此处选择
+                                        </el-button>
+                                    </template>
+                                </el-input>
+                            </el-col>
+                            <el-col :span="2">
+                                <el-button @click="openOutDir" type="primary" link :disabled="!out_path">打开
+                                </el-button>
+                            </el-col>
+                        </el-form-item>
+                    </el-col>
+
+                    <el-col :span="18"></el-col>
+                    <el-col :span="6">
+
+                    </el-col>
+
+                </el-row>
+                <el-row :gutter="24">
                     <el-col :span="12" v-show="checked1">
                         <el-form-item label="递归">
                             <el-switch v-model="recursively"/>
@@ -78,35 +99,7 @@
                         </el-form-item>
                     </el-col>
                 </el-row>
-                <el-row :gutter="24">
-                    <el-col :span="24">
-                        <el-form-item label="文件路径">
-                            <el-col :span="20">
-                                <el-input v-model="out_path" class="m-2" placeholder="选择操作文件夹/文件"
-                                          :disabled="true"
-                                          @click="selectOutDir"
-                                          size="default"
-                                          clearable>
-                                    <template #append>
-                                        <el-button @click="selectOutDir" type="primary" style="width: 115px"
-                                                   class="m-2">点击此处选择
-                                        </el-button>
-                                    </template>
-                                </el-input>
-                            </el-col>
-                            <el-col :span="2">
-                                <el-button @click="openOutDir" type="primary" link :disabled="!out_path">打开
-                                </el-button>
-                            </el-col>
-                        </el-form-item>
-                    </el-col>
 
-                    <el-col :span="18"></el-col>
-                    <el-col :span="6">
-
-                    </el-col>
-
-                </el-row>
             </el-space>
         </div>
 

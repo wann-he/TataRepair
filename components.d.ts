@@ -32,11 +32,11 @@ declare module '@vue/runtime-core' {
     ElSwitch: typeof import('element-plus/es')['ElSwitch']
     ElTabPane: typeof import('element-plus/es')['ElTabPane']
     ElTabs: typeof import('element-plus/es')['ElTabs']
-    ElTag: typeof import('element-plus/es')['ElTag']
     FileJob: typeof import('./src/components/file-job.vue')['default']
     PicJob: typeof import('./src/components/pic-job.vue')['default']
     RouterLink: typeof import('vue-router')['RouterLink']
     RouterView: typeof import('vue-router')['RouterView']
+    Setting: typeof import('./src/components/setting.vue')['default']
     VideoCard: typeof import('./src/components/video-card.vue')['default']
     VideoJob: typeof import('./src/components/video-job.vue')['default']
   }

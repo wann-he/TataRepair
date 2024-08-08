@@ -23,6 +23,10 @@ const router = createRouter({
             path: '/copyright',
             component: () => import('../components/copyright.vue'),
         },
+        {
+            path: '/setting',
+            component: () => import('../components/setting.vue'),
+        },
     ],
 })
 
