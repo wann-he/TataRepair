@@ -24,6 +24,10 @@ const router = createRouter({
             component: () => import('../components/copyright.vue'),
         },
         {
+            path: '/media',
+            component: () => import('../components/media.vue'),
+        },
+        {
             path: '/setting',
             component: () => import('../components/setting.vue'),
         },

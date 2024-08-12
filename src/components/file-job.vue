@@ -9,14 +9,11 @@
             <el-check-tag :checked="checked2" type="success" @change="onChange2">
                 批量重命名
             </el-check-tag>
-            <el-check-tag :checked="checked3" type="danger" @change="onChange3">
-                格式转换
-            </el-check-tag>
-            <el-check-tag :checked="checked4" type="warning" @change="onChange4">
-                自由模式(chatGPT)
-            </el-check-tag>
-            <!--            <el-check-tag :checked="checked5" type="primary" @change="onChange5">-->
-            <!--                Tag 5-->
+            <!--            <el-check-tag :checked="checked3" type="danger" @change="onChange3">-->
+            <!--                格式转换-->
+            <!--            </el-check-tag>-->
+            <!--            <el-check-tag :checked="checked4" type="warning" @change="onChange4">-->
+            <!--                自由模式(chatGPT)-->
             <!--            </el-check-tag>-->
         </el-space>
 
@@ -136,10 +133,10 @@
 <script setup lang="ts">
 import {ref} from 'vue'
 import {open} from '@tauri-apps/api/dialog'
-import {appDir} from '@tauri-apps/api/path'
+import {appDataDir, appDir} from '@tauri-apps/api/path'
 import type {TabsPaneContext} from 'element-plus'
 import {ElMessage} from 'element-plus'
-import {FConfig, replaceFilename, upgradeFile2Curr} from '../script/filetools'
+import {FConfig, replaceFilename, Result, upgradeFile2Curr} from '../script/filetools'
 import {convertFileSrc} from '@tauri-apps/api/tauri'
 import {
     getVideoInfo,
@@ -148,7 +145,6 @@ import {
     MConfig,
     merge2Video,
     mp4ToImgV2,
-    Result,
     ThreadPool,
     TMP_4K_DIR,
     Videoo
@@ -163,7 +159,7 @@ const checked3 = ref(false)
 const checked4 = ref(false)
 const checked5 = ref(false)
 
-const recursively = ref(false)
+const recursively = ref(true)
 const delSubAfter = ref(false)
 
 const onChange1 = (status: boolean) => {
@@ -199,29 +195,8 @@ const onChange3 = (status: boolean) => {
 
 }
 
-const onChange4 = (status: boolean) => {
-    checked4.value = status
-    if (status) {
-        checked1.value = false
-        checked2.value = false
-        checked3.value = false
-        checked5.value = false
-    }
-
-}
-
-const onChange5 = (status: boolean) => {
-    checked5.value = status
-    if (status) {
-        checked1.value = false
-        checked2.value = false
-        checked3.value = false
-        checked4.value = false
-    }
-}
-
 const model = ChatModelVal
-const replaceType = ReplaceTypeVal
+const replaceType = ref(1)
 const multiple = MultipleVal
 const codingModeVal = ref<'libx264' | 'hevc_nvenc'>('libx264')
 
@@ -267,11 +242,11 @@ async function select() {
     const selected = await open({
         directory: false,
         multiple: false,
-        defaultPath: await appDir(),
+        defaultPath: await appDataDir(),
         filters: [
             {
                 name: "Video files",
-                extensions: ['mp4', '3gp', 'avi']
+                extensions: ['mp4', '3gp', 'avi', 'mov', '.m4a']
             }
         ],
     })
@@ -463,7 +438,7 @@ const openOutDir = () => {
     // invoke<string[]>('open_out_dir', {path: path.value})
 }
 
-const res: Result = {rcode: -1};
+const res: Result = {failedNum: 0, rcode: -1};
 
 const startJob = (type: number) => {
     console.log("startJob." + type)
@@ -500,6 +475,7 @@ const startJob = (type: number) => {
 }
 
 const replaceTypeChange = (value: number) => {
+    replaceType.value = value;
     if (value == 3 || value == 4 || value == 5) {
         numShow.value = true
     } else {

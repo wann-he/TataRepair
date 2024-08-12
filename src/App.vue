@@ -41,6 +41,12 @@
                 </el-icon>
                 <span style="padding-left: 10px; color: #111">文件小工具</span>
             </div>
+            <div class="box title" :class="{ selected: currentSelected === 'media' }" @click="select('media')">
+                <el-icon>
+                    <VideoCameraFilled/>
+                </el-icon>
+                <span style="padding-left: 10px; color: #111">音视频工具</span>
+            </div>
         </el-aside>
         <el-main>
             <router-view v-slot="{ Component }">
@@ -95,6 +101,9 @@ function go2Pic() {
 function go2File() {
     router.push('/file-job')
 }
+function go2Media() {
+    router.push('/media')
+}
 
 function go2Setting() {
     router.push('/setting')
@@ -120,7 +129,7 @@ function toggleMaximize() {
     isMax.value = !isMax.value
 }
 
-function select(type: 'pic' | 'video' | 'file') {
+function select(type: 'pic' | 'video' | 'file'|'media') {
     currentSelected.value = type;
     switch (type) {
         case 'pic':
@@ -131,6 +140,9 @@ function select(type: 'pic' | 'video' | 'file') {
             break;
         case 'file':
             go2File();
+            break;
+        case 'media':
+            go2Media();
             break;
         default:
             break;

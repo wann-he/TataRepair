@@ -48,10 +48,10 @@
                 <el-col :span="24">
                     <el-form-item label="多线程">
                         <el-radio-group v-model="thread">
-                            <el-radio-button label="1">不使用</el-radio-button>
-                            <el-radio-button label="2">线程数：2</el-radio-button>
-                            <el-radio-button label="5">线程数：5</el-radio-button>
-                            <el-radio-button label="10">线程数：10</el-radio-button>
+                            <el-radio-button value="1">不使用</el-radio-button>
+                            <el-radio-button value="2">线程数：2</el-radio-button>
+                            <el-radio-button value="5">线程数：5</el-radio-button>
+                            <el-radio-button value="10">线程数：10</el-radio-button>
                         </el-radio-group>
                     </el-form-item>
                 </el-col>
@@ -95,7 +95,7 @@
 <script setup lang="ts">
 import {ref} from 'vue'
 import {open} from '@tauri-apps/api/dialog'
-import {appDir} from '@tauri-apps/api/path'
+import {appDataDir, appDir} from '@tauri-apps/api/path'
 import type {TabsPaneContext} from 'element-plus'
 import {ElMessage} from 'element-plus'
 import {convertFileSrc} from '@tauri-apps/api/tauri'
@@ -113,6 +113,7 @@ import {
 import VideoCard from "./video-card.vue";
 import {open as shellopen} from "@tauri-apps/api/shell";
 import {CodingModeOptions, ModelOptions, ModelVal, MultipleOptions, MultipleVal} from "../script/constants";
+import {basename} from "pathe";
 
 
 const model = ModelVal
@@ -157,11 +158,11 @@ async function select() {
     const selected = await open({
         directory: false,
         multiple: false,
-        defaultPath: await appDir(),
+        defaultPath: await appDataDir(),
         filters: [
             {
                 name: "Video files",
-                extensions: ['mp4', '3gp', 'avi']
+                extensions: ['mp4', '3gp', 'avi', 'mov', '.m4a']
             }
         ],
     })
@@ -177,8 +178,10 @@ async function select() {
         }
         console.log('fs', path.value)
         vvd.value = {
-            url: convertFileSrc(path.value), percentage: 0,
-            name: str,
+            path: str,
+            url: convertFileSrc(path.value),
+            percentage: 0,
+            name: basename(str),
             codingMode: codingModeVal.value,
             suffix: suffixVal.value,
             stages: [
@@ -188,12 +191,13 @@ async function select() {
             ]
         };
 
-        const videoInfo = await getVideoInfo(vvd.value).catch(() => {
-            console.log("Error when getVideoInfo...")
-            // image.status = 'exception'
-        }).finally(() => {
-        });
-        console.log('videoInfo:', videoInfo)
+        // const videoInfo = await getVideoInfo(vvd.value).catch((reason) => {
+        //     console.log("Error when getVideoInfo...")
+        //     console.log(reason)
+        //     // image.status = 'exception'
+        // }).finally(() => {
+        // });
+        // console.log('videoInfo:', videoInfo)
 
         const videoList: Videoo[] = []
         videoList.push(vvd.value)

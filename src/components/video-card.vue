@@ -1,8 +1,9 @@
 <template>
     <div class="video-card" v-for="(video, index) in videos" :key="index">
-        <div class="checkmark" v-if="video.stages[2].progress === 100">
-<!--            <el-button type="danger" :icon="Delete" circle @click=""/>-->
-            <el-icon v-if="video.stages[2].progress === 100" :size="30" color="#107929">
+        <div class="checkmark"
+             v-if="video.stages?.length>0 && video.stages?.length == (index + 1) && video.stages?.[index].progress === 100">
+            <!--            <el-button type="danger" :icon="Delete" circle @click=""/>-->
+            <el-icon v-if="video.stages[index].progress === 100" :size="30" color="#107929">
                 <SuccessFilled/>
             </el-icon>
         </div>
@@ -10,6 +11,9 @@
         <div class="video-info">
             <div class="title-res">
                 <h3>{{ video.name }}</h3>
+            </div>
+            <div class="v-info">
+                <span class="info">路径：{{ video.path }}</span>
             </div>
             <div class="v-info">
                 <span class="info">分辨率：{{ video.resolution }}</span>
@@ -32,19 +36,21 @@
 </template>
 
 <script lang="ts">
-import {defineComponent} from "vue";
+import {defineComponent, inject, PropType} from "vue";
 import {ElImage, ElProgress} from 'element-plus';
-import {Delete,SuccessFilled} from "@element-plus/icons-vue";
+import {Delete, SuccessFilled} from "@element-plus/icons-vue";
+import {getVideoInfo, Videoo} from "../script/mp4ToImg";
 
 export default defineComponent({
     name: "VideoCard",
     components: {
+        SuccessFilled,
         [ElImage.name]: ElImage,
         [ElProgress.name]: ElProgress
     },
     props: {
         videos: {
-            type: Array,
+            type: Array as PropType<Videoo[]>,
             required: true
         },
     },
@@ -58,6 +64,16 @@ export default defineComponent({
         // getProgressStatus(status: string | undefined) {
         //     return status === "In progress" ? "active" : status === "Completed" ? "success" : "exception";
         // },
+    },
+    watch: {
+        videos: function () {
+            this.videos.forEach((video) => {
+                getVideoInfo(video).catch((reason) => {
+                    console.log("Error when getVideoInfo...", reason)
+                }).finally(() => {
+                });
+            });
+        }
     }
 });
 </script>
@@ -66,8 +82,8 @@ export default defineComponent({
 .video-card {
     display: flex;
     width: 100%;
-    height: 180px;
-    margin: 20px;
+    height: 190px;
+    margin: 15px 0px;
     background-color: #F0F0F0; /* 添加的灰色背景色 */
     box-shadow: 0px 0px 10px rgba(0, 0, 0, 0.1); /* 添加的阴影 */
     border-radius: 10px; /* 添加的圆角 */
@@ -107,7 +123,7 @@ export default defineComponent({
 .stages {
     display: flex;
     flex-flow: row;
-    margin-top: 50px;
+    margin-top: 25px;
 }
 
 .stage {

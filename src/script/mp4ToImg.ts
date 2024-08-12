@@ -14,6 +14,7 @@ export interface Image {
 export interface Videoo {
     url: string;
     name: string;
+    path: string; // 完整路径
     percentage?: number;
     status?: string;
     alt?: string; // 可选的属性
@@ -52,15 +53,10 @@ export async function mp4ToImgV2(mconfig: MConfig, basePath: string, vd: Videoo)
     await readDir(`${basePath}/${TMP_IMG_DIR}`).catch(() => {
         createDir(`${basePath}/${TMP_IMG_DIR}`)
     })
-    // console.log(mconfig.model)
-    // console.log(mconfig.outscale)
-    const filename = basename(vd.name);
-    console.log('basename =====> ' + filename)
-    console.log('path =====> ' + vd.name)
-    console.log('url =====> ' + vd.url)
+    console.log('basename : %s ,path : %s ,url : %s', vd.name, vd.path, vd.url)
     // const cmd = `${ffmpegPath} -i ${file} -qscale:v 1 -qmin 1 -qmax 1 -vsync 0 ${basePath}/test/frame%08d.png`
     const command = Command.sidecar("bin/ffmpeg/ffmpeg",
-        ['-i', vd.name,
+        ['-i', vd.path,
             '-qscale:v', '1',
             '-qmin', '1',
             '-vsync', '0',
@@ -77,8 +73,7 @@ export async function mp4ToImgV2(mconfig: MConfig, basePath: string, vd: Videoo)
         console.log(line)
     })
     const output = await command.execute()
-    console.log('output.code ==> ' + output.code)
-
+    console.log('output ==> ', output)
     const imgs = await getImages(`${basePath}\\tmp_img`)
     console.log(imgs)
 
@@ -100,20 +95,20 @@ async function getImages(fileDir: string): Promise<Image[]> {
 export async function merge2Video(mconfig: MConfig, basePath: string, outPath: string, vd: Videoo) {
 // ffmpeg -i out_frames/frame%08d.jpg -i onepiece_demo.mp4 -map 0:v:0 -map 1:a:0 -c:a copy -c:v libx264 -r 23.98 -pix_fmt yuv420p output_w_audio.mp4
     console.log('============ 开始合并视频流 ============')
-    const filename = basename(vd.name);
-    console.log('basename =====> ' + filename)
-    console.log('path =====> ' + vd.name)
-    console.log('url =====> ' + vd.url)
+    console.log('basename : %s ,path : %s ,url : %s', vd.name, vd.path, vd.url)
+    await readDir(`${basePath}/${TMP_4K_DIR}`).catch(() => {
+        createDir(`${basePath}/${TMP_4K_DIR}`)
+    })
     const command = Command.sidecar("bin/ffmpeg/ffmpeg",
         ['-i', `${basePath}\\${TMP_4K_DIR}\\frame%08d.png`,
-            '-i', vd.name,
+            '-i', vd.path,
             '-map', '0:v:0',
             '-map', '1:a:0',
             '-c:a', 'copy',
             '-c:v', vd.codingMode || 'libx264',
             '-r', '23.98',
             '-pix_fmt', 'yuv420p',
-            `${outPath}\\${filename}${vd.suffix}.mp4`]);
+            `${outPath}\\${vd.name}${vd.suffix}.mp4`]);
 
     console.log(command)
 
@@ -179,23 +174,25 @@ let ffmpegOutput = `Your FFmpeg Output Here`;
 // console.log(parseFfmpegOutput(ffmpegOutput));
 export async function getVideoInfo(vd: Videoo) {
     const command = Command.sidecar("bin/ffmpeg/ffmpeg",
-        ['-i', vd.name,
+        ['-i', vd.path,
             '-hide_banner', '-f',
             'null', '-',
         ]);
-    console.log(command)
     command.on('close', () => {
-        console.log('任务完成 -> merge2Video')
+        console.log('任务完成 -> getVideoInfo')
     })
     let output = '';
-    command.on('error', error => console.error(`command error: "${error}"`));
-    command.stdout.on('data', line => console.log(`stdout: "${line}"`));
-
-    command.stderr.on('data', (line) => {
-        output = output + line + '\n';
-        console.log(line)
-    })
+    // command.on('error', error => console.error(`command error: "${error}"`));
+    // command.stdout.on('data', line => console.log(`stdout: "${line}"`));
+    //
+    // command.stderr.on('data', (line) => {
+    //     output = output + line + '\n';
+    //     console.log('command error ==> ',  line  )
+    // })
     const res = await command.execute()
+    console.log('command execute res', res)
+
+    output = res.stderr;
 
     const duration = output.match(/Duration: (.*?),/);
     let videoDuration = duration ? duration[1] : ''; // 00:00:05.02
