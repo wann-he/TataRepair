@@ -3,9 +3,13 @@
         <h3>视频转4K</h3>
         <div class="tip">注意: 视频名不要有空格</div>
         <div class="box select-box">
-            <div class="box select-button" @click="select">+ 选择视频</div>
+            <div @click="select" class="box select-button" :class="allDisabled ? 'disable-button' : '' ">+ 选择视频
+            </div>
 
-            <div class="box" :class="[path ? 'start-button' : 'default-button']" @click="start">开始转码</div>
+            <div class="box" @click="start"
+                 :class="[basePath && !allDisabled ? 'start-button' : 'default-button disable-button']"
+            >开始转码
+            </div>
         </div>
         <div class="box path-box">
             <!--            <el-form-->
@@ -15,7 +19,8 @@
             <el-row :gutter="24">
                 <el-col :span="12">
                     <el-form-item label="选择模型">
-                        <el-select v-model="model" class="m-2" placeholder="选择模型" size="default">
+                        <el-select v-model="model" class="m-2" placeholder="选择模型" size="default"
+                                   :disabled="allDisabled">
                             <el-option v-for="item in ModelOptions" :key="item.value" :label="item.label"
                                        :value="item.value"/>
                         </el-select>
@@ -23,7 +28,8 @@
                 </el-col>
                 <el-col :span="12">
                     <el-form-item label="放大倍数">
-                        <el-select v-model="multiple" class="m-2" placeholder="放大倍数" size="default">
+                        <el-select v-model="multiple" class="m-2" placeholder="放大倍数" size="default"
+                                   :disabled="allDisabled">
                             <el-option v-for="item in MultipleOptions" :key="item.value" :label="item.label"
                                        :value="item.value"/>
                         </el-select>
@@ -31,7 +37,8 @@
                 </el-col>
                 <el-col :span="12">
                     <el-form-item label="编码方式">
-                        <el-select v-model="codingModeVal" class="m-2" placeholder="编码方式" size="default">
+                        <el-select v-model="codingModeVal" class="m-2" placeholder="编码方式" size="default"
+                                   :disabled="allDisabled">
                             <el-option v-for="item in CodingModeOptions" :key="item.value" :label="item.label"
                                        :value="item.value"/>
                         </el-select>
@@ -39,7 +46,8 @@
                 </el-col>
                 <el-col :span="12">
                     <el-form-item label="视频后缀">
-                        <el-select v-model="suffixVal" class="m-2" placeholder="后缀" size="default">
+                        <el-select v-model="suffixVal" class="m-2" placeholder="后缀" size="default"
+                                   :disabled="allDisabled">
                             <el-option v-for="item in suffixOptions" :key="item.value" :label="item.label"
                                        :value="item.value"/>
                         </el-select>
@@ -47,11 +55,10 @@
                 </el-col>
                 <el-col :span="24">
                     <el-form-item label="多线程">
-                        <el-radio-group v-model="thread">
+                        <el-radio-group v-model="thread" :disabled="allDisabled">
                             <el-radio-button value="1">不使用</el-radio-button>
                             <el-radio-button value="2">线程数：2</el-radio-button>
                             <el-radio-button value="5">线程数：5</el-radio-button>
-                            <el-radio-button value="10">线程数：10</el-radio-button>
                         </el-radio-group>
                     </el-form-item>
                 </el-col>
@@ -61,7 +68,7 @@
                     <el-input v-model="out_path" class="m-2" placeholder="输出目录" :disabled="true" size="default"
                               clearable>
                         <template #prepend>
-                            <el-button @click="selectOutDir" type="primary">选择输出目录</el-button>
+                            <el-button @click="selectOutDir" type="primary" :disabled="allDisabled">选择输出目录</el-button>
                         </template>
                     </el-input>
                 </el-col>
@@ -75,7 +82,8 @@
             <el-tab-pane label="任务列表" name="first">
                 <el-row :gutter="24">
                     <el-col :span="24">
-                        <el-button @click="clearDoneAll" type="primary" link style="float: right">清空列表
+                        <el-button @click="clearDoneAll" type="primary" link style="float: right"
+                                   :disabled="allDisabled">清空列表
                         </el-button>
                     </el-col>
                 </el-row>
@@ -95,47 +103,51 @@
 <script setup lang="ts">
 import {ref} from 'vue'
 import {open} from '@tauri-apps/api/dialog'
-import {appDataDir, appDir} from '@tauri-apps/api/path'
+import {appDataDir} from '@tauri-apps/api/path'
 import type {TabsPaneContext} from 'element-plus'
 import {ElMessage} from 'element-plus'
 import {convertFileSrc} from '@tauri-apps/api/tauri'
 import {
-    getVideoInfo,
     Image,
     imgTo4k,
     MConfig,
     merge2Video,
-    mp4ToImgV2,
     ThreadPool,
     TMP_4K_DIR,
+    TMP_IMG_DIR,
+    video2Img,
     Videoo
 } from "../script/mp4ToImg";
 import VideoCard from "./video-card.vue";
 import {open as shellopen} from "@tauri-apps/api/shell";
 import {CodingModeOptions, ModelOptions, ModelVal, MultipleOptions, MultipleVal} from "../script/constants";
-import {basename} from "pathe";
+import {basename, dirname, extname, format, parse, relative, toNamespacedPath} from "pathe";
+import {createDir, readDir, removeDir} from "@tauri-apps/api/fs";
+import {path} from "@tauri-apps/api";
+import {sendNotify} from "../script/notification";
 
 
+const allDisabled = ref(false)
 const model = ModelVal
 const multiple = MultipleVal
 const codingModeVal = ref<'libx264' | 'hevc_nvenc'>('libx264')
 
-const suffixVal = ref<'_4k' | ''>('_4k')
+const suffixVal = ref<'_tata4k'>('_tata4k')
 const suffixOptions = [
     {
-        value: '_4k',
-        label: '_4k(为原视频名添加_4k后缀)',
-    },
-    {
-        value: '',
-        label: '保持原视频名',
+        value: '_tata4k',
+        label: '_tata4k(为原视频名添加_tata4k后缀)',
     }
 ]
 const activeName = ref('first')
 const labelPosition = ref('right')
 const thread = ref(1);
 
-const emptyVideo: Videoo = {};
+const emptyVideo: Videoo = {
+    url: '',
+    name: '',
+    path: ''
+};
 const vvd = ref(emptyVideo);
 const videoList: Videoo[] = []
 const videos = ref(videoList);
@@ -150,7 +162,7 @@ const handleClick = (tab: TabsPaneContext, event: Event) => {
 }
 
 /** 选择的目录路径 */
-const path = ref('')
+const basePath = ref('')
 const out_path = ref('')
 
 /** 选择目录 */
@@ -166,64 +178,63 @@ async function select() {
             }
         ],
     })
-    if (selected) {
-        console.log(selected)
-        let str = selected as string
-        // 当选择时才修改path的值
-        let currPath = ref('')
-        currPath.value = str.split('\\').slice(0, -1).join('\\')
-        path.value = currPath.value
-        if (!out_path.value) {
-            out_path.value = currPath.value;
-        }
-        console.log('fs', path.value)
-        vvd.value = {
-            path: str,
-            url: convertFileSrc(path.value),
-            percentage: 0,
-            name: basename(str),
-            codingMode: codingModeVal.value,
-            suffix: suffixVal.value,
-            stages: [
-                {progress: 0, status: '', name: '帧 提 取'},
-                {progress: 0, status: '', name: '图 像 放 大'},
-                {progress: 0, status: '', name: '合 并 视 频'}
-            ]
-        };
-
-        // const videoInfo = await getVideoInfo(vvd.value).catch((reason) => {
-        //     console.log("Error when getVideoInfo...")
-        //     console.log(reason)
-        //     // image.status = 'exception'
-        // }).finally(() => {
-        // });
-        // console.log('videoInfo:', videoInfo)
-
-        const videoList: Videoo[] = []
-        videoList.push(vvd.value)
-        videos.value = videoList;
-        console.log('videos', videos.value)
-    } else {
-        path.value = ''
+    if (!selected) {
+        return;
     }
+    console.log(selected)
+    let str = selected as string
+    // 当选择时才修改path的值
+    let currPath = ref('')
+    currPath.value = str.split('\\').slice(0, -1).join('\\')
+    basePath.value = currPath.value
+    if (!out_path.value) {
+        out_path.value = currPath.value;
+    }
+    console.log('fs', basePath.value)
+    vvd.value = {
+        path: str,
+        url: convertFileSrc(basePath.value),
+        percentage: 0,
+        name: basename(str),
+        codingMode: codingModeVal.value,
+        suffix: suffixVal.value,
+        stages: [
+            {progress: 0, status: '', name: '帧 提 取'},
+            {progress: 0, status: '', name: '图 像 放 大'},
+            {progress: 0, status: '', name: '合 并 视 频'}
+        ]
+    };
+
+    // const videoInfo = await getVideoInfo(vvd.value).catch((reason) => {
+    //     console.log("Error when getVideoInfo...")
+    //     console.log(reason)
+    //     // image.status = 'exception'
+    // }).finally(() => {
+    // });
+    // console.log('videoInfo:', videoInfo)
+
+    const videoList: Videoo[] = []
+    videoList.push(vvd.value)
+    videos.value = videoList;
+    console.log('videos', videos.value)
 }
 
 const clearDoneAll = () => {
     console.log("clearDoneAll.")
     videos.value.length = 0;
     vvd.value = emptyVideo;
-    path.value = ''
+    basePath.value = ''
     out_path.value = ''
+    allDisabled.value = false;
 }
 
-let basePath = ref('')
-
 async function start() {
-    const arr = path.value.split('/')
-    console.log(arr)
+    const arr = basePath.value.split('/')
     console.log(new Date());
+    console.log(arr)
+    console.log('basePath:', basePath.value)
     // 如果没有选择，则退出报错
-    if (!path.value || !vvd.value.name) {
+    if (!basePath.value || !vvd.value.path) {
         ElMessage({
             message: '未选择文件|目录',
             type: 'success'
@@ -231,71 +242,75 @@ async function start() {
         return
     }
 
-    basePath.value = path.value.replace('/input', '')
-    console.log('basePath:' + basePath.value)
-    console.log(`开始时间：${new Date()}`);
+    allDisabled.value = true;
 
-    const result = await mp4ToImgV2(null, basePath.value, vvd.value).catch(() => {
-        console.log("Error when imgTo4k...")
-        // image.status = 'exception'
-    }).finally(() => {
-    })
-    console.log("result ====================>")
-    console.log(result)
-    if (result.rcode !== 0) {
-        ElMessage({
-            message: '转换异常',
-            type: 'error'
-        })
-        return
-    }
-    if (vvd.value && vvd.value.stages) {
-        vvd.value.stages[0].progress = 100;
-        vvd.value.stages[0].status = 'success';
-    }
-    // // 处理视频帧
-    const mConfig: MConfig = {
+    // 处理视频帧
+    let mConfig: MConfig = {
         model: model.value,
         outscale: multiple.value,
         outpath: TMP_4K_DIR,
     };
-    const imgs: Image[] = result.images;
-    console.log('basePath:' + basePath.value)
-    // 3.
+    console.log(`开始时间：${new Date()}`);
+    let imgs: Image[] = [];
+    const res = await video2Img(basePath.value, vvd.value);
+    console.log("video2Img_res:", res)
+    if (res.rcode !== 0) {
+        await sendNotify(res.msg || `【${vvd.value.name}】转换异常`)
+        allDisabled.value = false;
+        return;
+    }
+    imgs = res.data;
+    if (vvd.value && vvd.value.stages) {
+        vvd.value.stages[0].progress = 100;
+        vvd.value.stages[0].status = 'success';
+    }
     const imgSize = imgs.length;
+    if (imgSize <= 0) {
+        console.log("imgSize:", imgSize)
+        await sendNotify(`【${vvd.value.name}】帧提取异常`)
+        allDisabled.value = false;
+        return;
+    }
+    // 3.
     if (thread.value == 1) {
         console.log('不使用多线程.')
         for (let i = 0; i < imgSize; i++) {
-            const res = await imgTo4k(mConfig, basePath.value, imgs[i])
-                .catch(() => {
-                    console.log("Error when processing img24k...");
+            await imgTo4k(mConfig, basePath.value, imgs[i])
+                .then((res) => {
+                    if (res?.rcode == 0) {
+                        const progress = (i / imgSize) * 100;  // 将小数转为百分比
+                        console.log(`Progress: ${progress}%`);
+                        if (vvd.value && vvd.value.stages) {
+                            vvd.value.stages[1].progress = progress;
+                        }
+                    }
+                })
+                .catch((reason) => {
+                    console.log("Error when processing imgTo4k,reason:", reason);
                     imgs[i].status = 'Exception';
                 });
-            if (res?.rcode == 0) {
-                const progress = (i / imgSize) * 100;  // 将小数转为百分比
-                console.log(`Progress: ${progress}%`);
-                if (vvd.value && vvd.value.stages) {
-                    vvd.value.stages[1].progress = progress;
-                }
-            }
-
         }
         if (vvd.value && vvd.value.stages) {
             vvd.value.stages[1].progress = 100;
             vvd.value.stages[1].status = 'success';
         }
-        await doMerge(mConfig);
-
+        await doMerge(basePath.value, out_path.value, vvd.value);
     } else {
         console.log(`多线程运行 ${thread.value}`)
+        const o_path = mConfig.outpath || '';
+        const img_prefix = mConfig.prefix || '';
+        const tmp_out_path = await path.join(basePath.value, o_path);
+        await readDir(tmp_out_path).catch(() => {
+            createDir(tmp_out_path)
+        })
         // 创建新的线程池实例，限制并发任务数为5
         const threadPool = new ThreadPool(thread.value);
         // 加载到线程池中的任务
         for (let i = 0; i < imgSize; i++) {
             threadPool.run(() =>
                 imgTo4k(mConfig, basePath.value, imgs[i])
-                    .catch(() => {
-                        console.log("Error when processing img24k...");
+                    .catch((reason) => {
+                        console.log("Error when processing threadPool_imgTo4k,reason:", reason);
                         imgs[i].status = 'Exception';
                     })
             );
@@ -306,7 +321,7 @@ async function start() {
             if (vvd.value && vvd.value.stages) {
                 vvd.value.stages[1].progress = progress;
             }
-        }, 1000);  // 每一秒获取一次进度
+        }, 2000);  // 每2秒获取一次进度
 
         // 等待所有任务完成后再执行其他操作
         threadPool.isDone().then(async () => {
@@ -317,31 +332,48 @@ async function start() {
                 vvd.value.stages[1].status = 'success';
             }
             // 在这执行后续的操作代码。
-            await doMerge(mConfig);
+            await doMerge(basePath.value, out_path.value, vvd.value);
         });
     }
     return
 }
 
-async function doMerge(mConfig: MConfig) {
+async function doMerge(base_path: string, out_path: string, video: Videoo) {
     // 在这执行后续的操作代码。
-    const mRes = await merge2Video(mConfig, basePath.value, out_path.value, vvd.value).catch(() => {
-        console.log("Error when merge2Video...")
+    const img_path = await path.join(base_path, TMP_4K_DIR)
+
+    const mergeRes = await merge2Video(img_path, out_path, video).catch((reason) => {
+        console.log("Error when merge2Video,reason:", reason)
     }).finally(() => {
     })
-    if (vvd.value && vvd.value.stages) {
-        vvd.value.stages[2].progress = 100;
-        vvd.value.stages[2].status = 'success';
+    if (video && video.stages && video.stages.length == 3) {
+        video.stages[2].progress = 100;
+        video.stages[2].status = 'success';
     }
-    console.log(`merge2Video result ==> ${mRes}`)
+    console.log('merge2Video result :', mergeRes)
     console.log(`完成时间：${new Date()}`);
+
+    allDisabled.value = false;
+
+    await sendNotify(`【${video.name}】视频转4k-完成!`)
+
+    // 删除临时文件夹目录
+    const tmp_dir_1 = await path.join(basePath.value, TMP_IMG_DIR);
+    const tmp_dir_2 = await path.join(basePath.value, TMP_4K_DIR);
+    await removeDir(tmp_dir_1, {recursive: true}).catch((reason) => {
+        console.log(`删除临时文件夹${TMP_IMG_DIR}失败：${reason}`)
+    })
+    await removeDir(tmp_dir_2, {recursive: true}).catch((reason) => {
+        console.log(`删除临时文件夹${TMP_4K_DIR}失败：${reason}`)
+    })
+
 }
 
 async function selectOutDir() {
     const selected = await open({
         directory: true,
         multiple: false,
-        defaultPath: await appDir(),
+        defaultPath: await appDataDir(),
     })
     if (selected) {
         out_path.value = selected.toString()
@@ -455,6 +487,11 @@ document.oncontextmenu = function () {
 
 .text-red {
     color: red;
+}
+
+.disable-button {
+    cursor: not-allowed;
+    pointer-events: none;
 }
 
 </style>

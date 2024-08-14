@@ -25,13 +25,14 @@ export async function video2Audio(mediaConf: MediaConfig, medias: Videoo[]): Pro
             console.log(`Entry-path: ${vd.path};filename:${vd.name}`);
 
             let command: Command = Command.sidecar("bin/ffmpeg/ffmpeg", []);
-            if (mediaConf.audio_scheme == 'mp3') {
+            if (mediaConf.audio_scheme == 'flac') {
                 //ffmpeg -i input.mp4 -vn -c:a flac output.flac
                 command = Command.sidecar("bin/ffmpeg/ffmpeg",
                     [
                         '-i', vd.path, '-vn',
                         '-c:a', 'flac',
-                        `${out_path}\\${vd.name}.flac`]);
+                        `${out_path}\\${vd.name}.flac`]
+                    ,{ encoding: 'utf8' });
             } else {
                 //ffmpeg -i input.mp4 -vn -c:a libmp3lame -q:a 0 output.mp3
                 command = Command.sidecar("bin/ffmpeg/ffmpeg",
@@ -39,7 +40,7 @@ export async function video2Audio(mediaConf: MediaConfig, medias: Videoo[]): Pro
                         '-i', vd.path, '-vn',
                         '-c:a', 'libmp3lame',
                         '-q:a', '0',
-                        `${out_path}\\${vd.name}.mp3`]);
+                        `${out_path}\\${vd.name}.mp3`],{ encoding: 'utf8' });
             }
             console.log(command)
 
@@ -92,7 +93,8 @@ export async function convert(mediaConf: MediaConfig, medias: Videoo[]): Promise
                 '-crf', '23',
                 '-c:a', 'aac',
                 '-b:a', '128k',
-                `${out_path}\\${vd.name}${vd.suffix}.${mediaConf.out_video_scheme}`]);
+                `${out_path}\\${vd.name}${vd.suffix}.${mediaConf.out_video_scheme}`]
+            ,{ encoding: 'utf8' });
         // ffmpeg -i "i.mov" -c:v libx264 -preset medium -crf 23 -c:a aac -b:a 128k "o.mp4"
         console.log(command)
 

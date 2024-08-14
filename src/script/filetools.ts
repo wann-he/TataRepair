@@ -6,8 +6,9 @@ import {join} from "@tauri-apps/api/path";
 export interface Result {
     rcode: number;
     msg?: string;
-    failedNum: number;
+    failedNum?: number;
     successNum?: number;
+    data?: any;
 }
 
 

@@ -2,15 +2,15 @@
     <el-scrollbar>
         <h3>图片高清修复</h3>
         <div class="box select-box">
-            <div class="box select-button" @click="select">+ 选择图片</div>
+            <div class="box select-button" :class="allDisabled ? 'disable-button' : '' " @click="select">+ 选择图片</div>
 
-            <div class="box" :class="[path ? 'start-button' : 'default-button']" @click="start">开始转码</div>
+            <div class="box" :class="[path && !allDisabled? 'start-button' : 'default-button disable-button']" @click="start">开始转码</div>
         </div>
         <div class="box path-box">
             <el-row>
                 <el-col :span="12">
                     <el-form-item label="模型">
-                        <el-select v-model="model" class="m-2" placeholder="选择模型" size="default">
+                        <el-select v-model="model" class="m-2" placeholder="选择模型" size="default" :disabled="allDisabled">
                             <el-option v-for="item in ModelOptions" :key="item.value" :label="item.label"
                                        :value="item.value"/>
                         </el-select>
@@ -18,7 +18,7 @@
                 </el-col>
                 <el-col :span="12">
                     <el-form-item label="放大倍数">
-                        <el-select v-model="multiple" class="m-2" placeholder="放大倍数" size="default">
+                        <el-select v-model="multiple" class="m-2" placeholder="放大倍数" size="default" :disabled="allDisabled">
                             <el-option v-for="item in MultipleOptions" :key="item.value" :label="item.label"
                                        :value="item.value"/>
                         </el-select>
@@ -30,7 +30,7 @@
                     <el-input v-model="path" class="m-2" placeholder="输出目录" :disabled="true" size="default"
                               clearable>
                         <template #prepend>
-                            <el-button @click="selectOutDir" type="primary">选择输出目录</el-button>
+                            <el-button @click="selectOutDir" type="primary" :disabled="allDisabled">选择输出目录</el-button>
                         </template>
                     </el-input>
                 </el-col>
@@ -72,7 +72,7 @@
                                 <!--                                <div style="text-align: right">-->
                                 <!--                                    <el-button @click="clearDoneAll" type="primary" link style="float: right">清空列表</el-button>-->
                                 <!--                                </div>-->
-                                <el-button @click="clearDoneAll" type="primary" link style="float: right">清空列表
+                                <el-button @click="clearDoneAll" type="primary" link style="float: right" :disabled="allDisabled">清空列表
                                 </el-button>
                             </el-col>
                         </el-row>
@@ -106,7 +106,7 @@
 <script setup lang="ts">
 import {computed, ref} from 'vue'
 import {open} from '@tauri-apps/api/dialog'
-import {appDir, desktopDir} from '@tauri-apps/api/path'
+import {appDataDir, appDir, desktopDir} from '@tauri-apps/api/path'
 import {open as shellopen} from '@tauri-apps/api/shell';
 import {convertFileSrc} from '@tauri-apps/api/tauri';
 import type {TabsPaneContext} from 'element-plus'
@@ -114,8 +114,10 @@ import {ElMessage} from 'element-plus'
 import {Image, imgTo4k} from "../script/mp4ToImg";
 import {Delete} from "@element-plus/icons-vue";
 import {ModelOptions, ModelVal, MultipleOptions, MultipleVal} from "../script/constants";
+import {sendNotify} from "../script/notification";
+import {basename} from "pathe";
 
-
+const allDisabled = ref(false)
 const activeName = ref('first')
 const scheduleList = ref<string[]>([])
 const completeList = ref<string[]>([])
@@ -187,7 +189,7 @@ async function selectOutDir() {
     const selected = await open({
         directory: true,
         multiple: false,
-        defaultPath: await appDir(),
+        defaultPath: await appDataDir(),
     })
     if (selected) {
         path.value = selected.toString()
@@ -197,50 +199,39 @@ async function selectOutDir() {
     }
 }
 
-function completed(file: string) {
-    scheduleList.value = scheduleList.value.filter((name: string) => name !== file)
-    completeList.value.push(file)
-}
-
-let basePath = ref('')
-
 async function start() {
     if (!path.value) {
         ElMessage({
-            message: '请选择input目录',
-            type: 'success'
+            message: '请选择输出目录',
+            type: 'error'
         })
         return
     }
 
-    // const fileList = await invoke<string[]>('read_dir_file', {path: path.value})
     if (imgs.value.length === 0) return
 
-    /** input的上级路径 */
-    basePath.value = path.value.replace('/input', '')
+    allDisabled.value = true;
 
-    // const existList = await invoke<string[]>('read_dir_file', {path: `${basePath.value}/output`})
-    // scheduleList.value = imagesArr.value.filter((file) => {
-    //     return !existList.includes(file)
-    // })
-    // scheduleList.value = fileList
-    console.log('basePath:' + basePath.value)
-
+    console.log('path:' + path.value)
+    let failedNum = 0;
     for (let i = imgs.value.length - 1; i >= 0; i--) {
         const image = imgs.value[i]
-        const result = await imgTo4k(mConfig.value, basePath.value, image).catch(() => {
-            console.log("error when img24k...")
+        const result = await imgTo4k(mConfig.value, path.value, image).catch((reason) => {
+            console.log("error when img24k...", reason)
+            failedNum++;
             image.status = 'exception'
+            sendNotify('转换异常:' + basename(image.name))
         }).finally(() => {
             if (image.status == 'success') {
                 imgsDone.value.push(image)
                 imgs.value.splice(i, 1)
             }
-        })
-        console.log("result ====================>")
-        console.log(result)
-    }
 
+        })
+        console.log("result ====================>", result)
+    }
+    await sendNotify(failedNum > 0 ? '转换完成,' + failedNum + '个失败' : '图片修复成功')
+    allDisabled.value = false;
 }
 
 // 禁止右键
@@ -259,6 +250,7 @@ const deleteImage = (index: number) => {
 const clearDoneAll = () => {
     console.log("clearDoneAll.")
     imgsDone.value.length = 0;
+    allDisabled.value = false;
 }
 
 const openOutDir = () => {
@@ -378,5 +370,10 @@ const openOutDir = () => {
 
 .el-button {
     float: right;
+}
+
+.disable-button {
+    cursor: not-allowed;
+    pointer-events: none;
 }
 </style>

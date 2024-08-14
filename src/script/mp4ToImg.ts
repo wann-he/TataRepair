@@ -1,7 +1,9 @@
-import {createDir, readDir, removeDir} from '@tauri-apps/api/fs'
+import {createDir, exists, readDir} from '@tauri-apps/api/fs'
 import {Command} from '@tauri-apps/api/shell'
-import {basename} from 'pathe'
+import {basename, parse} from 'pathe'
 import {convertFileSrc} from "@tauri-apps/api/tauri";
+import {path} from "@tauri-apps/api";
+import {Result} from "./filetools";
 
 export interface Image {
     url: string;
@@ -34,10 +36,11 @@ export interface Stage {
 }
 
 export interface MConfig {
-    model: string;
-    outscale: number;
-    outpath?: string; // 图片输出路径
+    model: string; // 模型
+    outscale: number; // 放大倍数
+    outpath?: string; // 图片输出路径|临时文件存放路径
     prefix?: string; // 图片名前缀
+    suffix?: string; // 图片名后缀
 }
 
 export const TMP_IMG_DIR = "tmp_img";
@@ -45,43 +48,83 @@ export const TMP_4K_DIR = "tmp_img_4k";
 export const INIT_STAGES: Stage[] = []
 
 
-export async function mp4ToImgV2(mconfig: MConfig, basePath: string, vd: Videoo): Promise<{
-    images: Image[];
-    rcode: number | null
-}> {
+/**
+ * 将MP4视频文件转换为一系列图像
+ *
+ * 此函数异步处理视频文件，提取其帧并转换为图像提取过程包括读取视频文件目录，
+ * 如果目录不存在，则创建目录使用FFmpeg工具执行转换，并捕获转换过程的输出
+ *
+ * @param basePath 基本路径，用于指定文件操作的根目录
+ * @param vd 视频文件信息，包括名称、路径和URL
+ * @returns 返回一个Promise，解析为包含转换后的图像数组和返回代码的对象
+ */
+export async function video2Img(basePath: string, vd: Videoo): Promise<Result> {
+    const exist = await exists(basePath);
+    if (!exist) {
+        return {rcode: -1, msg: '文件夹不存在', data: []}
+    }
+    // 记录开始提取视频帧的信息
     console.log('============ 开始提取视频帧 ============')
-    await readDir(`${basePath}/${TMP_IMG_DIR}`).catch(() => {
-        createDir(`${basePath}/${TMP_IMG_DIR}`)
+    // 读取目录，如果失败则创建目录
+    const tmp_dir = await path.join(basePath, TMP_IMG_DIR)
+    const tmp_out_path = await path.join(basePath, TMP_IMG_DIR, 'frame%08d.png')
+
+    await readDir(tmp_dir).catch(() => {
+        createDir(tmp_dir)
     })
-    console.log('basename : %s ,path : %s ,url : %s', vd.name, vd.path, vd.url)
-    // const cmd = `${ffmpegPath} -i ${file} -qscale:v 1 -qmin 1 -qmax 1 -vsync 0 ${basePath}/test/frame%08d.png`
+    // 记录视频文件的基本信息
+    console.log('name : %s ,path : %s ,url : %s', vd.name, vd.path, vd.url)
+
+    // 构建FFmpeg命令行，用于将视频文件转换为图像序列
     const command = Command.sidecar("bin/ffmpeg/ffmpeg",
         ['-i', vd.path,
             '-qscale:v', '1',
             '-qmin', '1',
             '-vsync', '0',
-            `${basePath}\\${TMP_IMG_DIR}\\frame%08d.png`]);
+            tmp_out_path]
+        , {encoding: 'utf8'});
 
+    // 输出FFmpeg命令详细信息
     console.log(command)
 
+    // 监听命令行的关闭事件，通常表示转换完成
     command.on('close', () => {
-        console.log('任务完成-mp4ToImgV2')
+        console.log('任务完成-video2Img')
     })
+    // 监听命令行的错误事件
     command.on('error', error => console.error(`command error: "${error}"`));
+    // 监听命令行的标准输出
     command.stdout.on('data', line => console.log(`command stdout: "${line}"`));
-    command.stderr.on('data', (line) => {
-        console.log(line)
-    })
+    // 监听命令行的错误输出
+    command.stderr.on('data', line => console.log(`command stderr: "${line}"`));
+    // 执行FFmpeg命令，并等待执行完成
     const output = await command.execute()
-    console.log('output ==> ', output)
-    const imgs = await getImages(`${basePath}\\tmp_img`)
+    // 记录命令执行结果
+    console.log('video2Img_output ==> ', output)
+    // 获取转换后的图像列表
+    const imgs = await getImages(tmp_dir)
+    // 记录图像列表信息
     console.log(imgs)
 
-    return {rcode: output.code, images: imgs}
+    // 返回FFmpeg命令的返回代码和转换后的图像列表
+    return {rcode: output.code === null ? -1 : output.code, data: imgs}
 }
 
 
+/**
+ * 异步获取图片数组
+ *
+ * 根据提供的文件目录，该函数将异步加载所有的图片文件并返回一个图片对象数组
+ * 每个图片对象包含文件名、文件路径和图片的Base64编码字符串
+ *
+ * @param fileDir 字符串类型的文件目录路径，用于指定从哪里加载图片
+ * @returns 返回一个Promise，该Promise解析为Image对象数组
+ */
 async function getImages(fileDir: string): Promise<Image[]> {
+    const exist = await exists(fileDir);
+    if (!exist) {
+        return []
+    }
     const entries = await readDir(fileDir);
     const imgArr: Image[] = []
     entries.forEach(file => {
@@ -92,23 +135,29 @@ async function getImages(fileDir: string): Promise<Image[]> {
     return imgArr;
 }
 
-export async function merge2Video(mconfig: MConfig, basePath: string, outPath: string, vd: Videoo) {
+export async function merge2Video(imgPath: string, outPath: string, vd: Videoo): Promise<Result> {
 // ffmpeg -i out_frames/frame%08d.jpg -i onepiece_demo.mp4 -map 0:v:0 -map 1:a:0 -c:a copy -c:v libx264 -r 23.98 -pix_fmt yuv420p output_w_audio.mp4
+    const isExist = await exists(imgPath) && await exists(outPath)
+    if (!isExist) {
+        return {rcode: -1, msg: '文件夹不存在', failedNum: 0}
+    }
     console.log('============ 开始合并视频流 ============')
     console.log('basename : %s ,path : %s ,url : %s', vd.name, vd.path, vd.url)
-    await readDir(`${basePath}/${TMP_4K_DIR}`).catch(() => {
-        createDir(`${basePath}/${TMP_4K_DIR}`)
-    })
+    const input_full_path = await path.join(imgPath, 'frame%08d.png')
+    const parsed = parse(vd.name)
+    console.log('parse(vd.name):', parsed)
+    const out_full_path = await path.join(outPath, parsed.name + (vd.suffix || '_tata4kk') + parsed.ext)
     const command = Command.sidecar("bin/ffmpeg/ffmpeg",
-        ['-i', `${basePath}\\${TMP_4K_DIR}\\frame%08d.png`,
+        ['-i', input_full_path,
             '-i', vd.path,
             '-map', '0:v:0',
-            '-map', '1:a:0',
+            '-map', '1:a:0?',
             '-c:a', 'copy',
             '-c:v', vd.codingMode || 'libx264',
             '-r', '23.98',
             '-pix_fmt', 'yuv420p',
-            `${outPath}\\${vd.name}${vd.suffix}.mp4`]);
+            out_full_path]
+        , {encoding: 'utf8'});
 
     console.log(command)
 
@@ -117,41 +166,57 @@ export async function merge2Video(mconfig: MConfig, basePath: string, outPath: s
     })
     command.on('error', error => console.error(`command error: "${error}"`));
     command.stdout.on('data', line => console.log(`command stdout: "${line}"`));
-    command.stderr.on('data', (line) => {
-        // console.log(line)
-    })
+    command.stderr.on('data', (line => console.log(`command stdout: "${line}"`)));
     const output = await command.execute()
-    console.log('output.code ==> ' + output.code)
+    console.log('merge2Video_output ==> ', output)
     console.log('============ 合并视频流完成 ============')
     console.log('============ 任务完成 ============')
-    // 删除临时文件夹目录
-    const res1 = await removeDir(`${basePath}/${TMP_IMG_DIR}`, {recursive: true}).catch((reason) => {
-        console.log(`删除临时文件夹${TMP_IMG_DIR}失败：${reason}`)
-    })
-    const res2 = await removeDir(`${basePath}/${TMP_4K_DIR}`, {recursive: true}).catch((reason) => {
-        console.log(`删除临时文件夹${TMP_4K_DIR}失败：${reason}`)
-    })
-    return {rcode: output.code}
+    return {rcode: output.code === null ? -1 : output.code}
 }
+
 
 // ./realesrgan-ncnn-vulkan.exe -i input.jpg -o output.png
 export async function imgTo4k(mconfig: MConfig, basePath: string, img: Image): Promise<{ rcode: number | null }> {
     const o_path = mconfig.outpath || '';
     const img_prefix = mconfig.prefix || '';
 
-    await readDir(`${basePath}/${o_path}`).catch(() => {
-        createDir(`${basePath}/${o_path}`)
+    const out_path = await path.join(basePath, o_path);
+
+    await readDir(out_path).catch(() => {
+        createDir(out_path)
     })
-    // console.log(mconfig.model)
-    // console.log(mconfig.outscale)
+
+    console.log(mconfig)
     const filename = basename(img.name);
     const command = Command.sidecar("bin/realesrgan/realesrgan-ncnn-vulkan",
-        ['-i', img.name, '-o', `${basePath}\\${o_path}\\${img_prefix}${filename}`, '-n', mconfig.model, '-s', mconfig.outscale + '', '-v']);
+        ['-i', img.name, '-o', `${out_path}\\${img_prefix}${filename}`, '-n', mconfig.model, '-s', mconfig.outscale + '', '-v'],
+        {encoding: 'utf8'});
+    console.log(command)
     command.on('close', () => {
-        console.log('任务完成')
+        console.log('任务完成 -> imgTo4k')
     })
-    command.stderr.on('data', (line) => {
-        // console.log(line)
+    // command.on('error', error => console.log('imgTo4k command error:  ', error));
+
+    // command.stderr.on('data', (line) => {
+    //     console.log(line)
+    //     if (line.includes("%")) {
+    //         img.percentage = Number(line.replace("%", ""));
+    //         console.log(img.percentage)
+    //     }
+    //     const regExp = /\S+\s->\s\S+\sdone/;
+    //     const match: boolean = regExp.test(line);
+    //     if (match) {
+    //         img.percentage = 100;
+    //         img.status = 'success'
+    //     }
+    // })
+
+    const output = await command.execute()
+    console.log('imgTo4k_command.execute:', output)
+    const lines = output.stderr.split(/\r?\n/);
+
+    lines.forEach((line, index) => {
+        console.log(`Good_Line ${index + 1}: ${line}`);
         if (line.includes("%")) {
             img.percentage = Number(line.replace("%", ""));
             console.log(img.percentage)
@@ -162,22 +227,18 @@ export async function imgTo4k(mconfig: MConfig, basePath: string, img: Image): P
             img.percentage = 100;
             img.status = 'success'
         }
-    })
-    const output = await command.execute()
-    // console.log('output.code ==> ' + output.code)
-    return {rcode: output.code}
+    });
+
+    return {rcode: 0}
 }
 
 
-let ffmpegOutput = `Your FFmpeg Output Here`;
-
-// console.log(parseFfmpegOutput(ffmpegOutput));
 export async function getVideoInfo(vd: Videoo) {
     const command = Command.sidecar("bin/ffmpeg/ffmpeg",
         ['-i', vd.path,
             '-hide_banner', '-f',
             'null', '-',
-        ]);
+        ], {encoding: 'utf8'});
     command.on('close', () => {
         console.log('任务完成 -> getVideoInfo')
     })

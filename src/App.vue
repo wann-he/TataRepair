@@ -3,12 +3,10 @@
         <div data-tauri-drag-region class="titlebar">
             <div data-tauri-drag-region class="title-aside"></div>
             <div>
-                <!--                <div class="titlebar-button" id="titlebar-help" @click="goToCopyright">-->
-                <!--                    <img src="./assets/问号.svg" alt="minimize" />-->
-                <!--                </div>-->
-                <div class="titlebar-button" id="titlebar-setting" @click="go2Setting">
-                    <span style="padding: 5px 5px; color: #f0f0f0">设置</span>
-                </div>
+<!--                <div class="titlebar-button" id="titlebar-setting" @click="go2Setting">-->
+<!--&lt;!&ndash;                    <span style="padding: 5px 5px; color: #f0f0f0">设置</span>&ndash;&gt;-->
+<!--                    <el-icon color="white"><Setting /></el-icon>-->
+<!--                </div>-->
                 <div class="titlebar-button" id="titlebar-minimize" @click="minimize">
                     <img src="./assets/最小化.svg" alt="minimize"/>
                 </div>
@@ -25,25 +23,25 @@
         <el-aside>
             <div class="box title" :class="{ selected: currentSelected === 'pic' }" @click="select('pic')">
                 <el-icon>
-                    <PictureFilled/>
+                    <Picture/>
                 </el-icon>
                 <span style="padding-left: 10px; color: #111">图片修复</span>
             </div>
             <div class="box title" :class="{ selected: currentSelected === 'video' }" @click="select('video')">
                 <el-icon>
-                    <VideoCameraFilled/>
+                    <VideoCamera/>
                 </el-icon>
                 <span style="padding-left: 10px; color: #111">视频转4K</span>
             </div>
             <div class="box title" :class="{ selected: currentSelected === 'file' }" @click="select('file')">
                 <el-icon>
-                    <VideoCameraFilled/>
+                    <Folder/>
                 </el-icon>
                 <span style="padding-left: 10px; color: #111">文件小工具</span>
             </div>
             <div class="box title" :class="{ selected: currentSelected === 'media' }" @click="select('media')">
                 <el-icon>
-                    <VideoCameraFilled/>
+                    <Film/>
                 </el-icon>
                 <span style="padding-left: 10px; color: #111">音视频工具</span>
             </div>
@@ -67,6 +65,7 @@ import remin from './assets/还原.svg'
 import {appWindow} from '@tauri-apps/api/window'
 import {getffmpeg} from './script/getffmpeg'
 import {useRouter} from 'vue-router'
+import {sendNotify} from "./script/notification";
 
 const router = useRouter()
 

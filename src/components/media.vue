@@ -17,11 +17,18 @@
         </el-space>
 
         <div class="box select-box">
-            <div class="box select-button" @click="selectVideo" v-show="checked1 || checked2 || checked3">+ 选择视频
+            <div class="box select-button"
+                 :class="allDisabled ? 'disable-button' : '' "
+                 @click="selectVideo" v-show="checked1 || checked2 || checked3">+ 选择视频
             </div>
-            <div class="box select-button-green" @click="selectAudio" v-show=" checked2 || checked4">+ 选择音频</div>
-
-            <div class="box" :class="[out_path ? 'start-button' : 'default-button']" @click="start">开始转码</div>
+            <div class="box select-button-green"
+                 :class="allDisabled ? 'disable-button' : '' "
+                 @click="selectAudio" v-show=" checked2 || checked4">+ 选择音频
+            </div>
+            <div class="box" @click="start"
+                 :class="[out_path && !allDisabled ? 'start-button' : 'default-button disable-button']"
+            >开始转码
+            </div>
         </div>
 
 
@@ -38,7 +45,7 @@
                                           clearable>
                                     <template #append>
                                         <el-button @click="selectOutDir" type="default" style="width: 115px"
-                                                   class="m-2">点击此处选择
+                                                   :disabled="allDisabled" class="m-2">点击此处选择
                                         </el-button>
                                     </template>
                                 </el-input>
@@ -56,7 +63,7 @@
                 <el-row :gutter="24">
                     <el-col :span="24" v-show="checked1">
                         <el-form-item label="输出音频格式">
-                            <el-radio-group v-model="out_audio_scheme">
+                            <el-radio-group v-model="out_audio_scheme" :disabled="allDisabled">
                                 <el-radio value="mp3">mp3</el-radio>
                                 <el-radio value="flac">flac</el-radio>
                             </el-radio-group>
@@ -64,7 +71,7 @@
                     </el-col>
                     <el-col :span="24" v-show="checked3">
                         <el-form-item label="输出视频格式">
-                            <el-radio-group v-model="out_video_scheme">
+                            <el-radio-group v-model="out_video_scheme" :disabled="allDisabled">
                                 <el-radio value="mp4">mp4</el-radio>
                                 <el-radio value="mkv">mkv</el-radio>
                                 <el-radio value="mov">mov</el-radio>
@@ -74,7 +81,7 @@
                     </el-col>
                     <el-col :span="12" v-show="checked4">
                         <el-form-item label="完成后删除子文件夹">
-                            <el-switch v-model="delSubAfter"/>
+                            <el-switch v-model="delSubAfter" :disabled="allDisabled"/>
                         </el-form-item>
                     </el-col>
                 </el-row>
@@ -86,7 +93,8 @@
             <el-tab-pane label="任务列表" name="first">
                 <el-row :gutter="24">
                     <el-col :span="24">
-                        <el-button @click="clearDoneAll" type="primary" link style="float: right">清空列表
+                        <el-button @click="clearDoneAll" type="primary" link style="float: right"
+                                   :disabled="allDisabled">清空列表
                         </el-button>
                     </el-col>
                 </el-row>
@@ -126,9 +134,11 @@ import VideoCard from "./video-card.vue";
 import MediaCardPair, {MediaInfo} from "./media-card-pair.vue";
 import {basename} from "pathe";
 import {getVideoInfo, Videoo} from "../script/mp4ToImg";
+import {sendNotify} from "../script/notification";
 
+const allDisabled = ref(false)
 
-const checked1 = ref(false)
+const checked1 = ref(true)
 const checked2 = ref(false)
 const checked3 = ref(false)
 const checked4 = ref(false)
@@ -137,7 +147,7 @@ const checked5 = ref(false)
 const recursively = ref(false)
 const delSubAfter = ref(false)
 
-const out_audio_scheme = ref('mp3')
+const out_audio_scheme = ref<'flac'|'mp3'>('mp3')
 const out_video_scheme = ref<'mp4' | 'mkv' | 'mov' | '3gp'>('mp4')
 
 const onChange1 = (status: boolean) => {
@@ -357,6 +367,7 @@ const clearDoneAll = () => {
     videos.value.length = 0;
     mediaPairs.value.length = 0;
     out_path.value = ''
+    allDisabled.value = false
 }
 
 
@@ -372,11 +383,12 @@ async function start() {
         })
         return
     }
+    allDisabled.value = true
 
     console.log(`开始时间：${new Date()}`);
     if (checked1.value) {
         const result = await video2Audio({
-            audio_scheme: undefined,
+            audio_scheme: out_audio_scheme.value,
             num: 0,
             out_path: out_path.value,
             out_video_scheme: undefined,
@@ -384,17 +396,11 @@ async function start() {
         }, videos.value)
             .then((res) => {
                 console.log(res)
-                ElMessage({
-                    message: '任务完成',
-                    type: 'success'
-                })
+                sendNotify(`批量音频提取完成`)
             })
             .catch((reson) => {
                 console.log(`Error when video2Audio...${reson}`)
-                ElMessage({
-                    message: '转换异常',
-                    type: 'error'
-                })
+                sendNotify(`转换异常${reson}`)
             });
     }
     if (checked3.value) {
@@ -408,19 +414,14 @@ async function start() {
             }, videos.value)
             .then((res) => {
                 console.log(res)
-                ElMessage({
-                    message: '任务完成',
-                    type: 'success'
-                })
+                sendNotify(`批量格式转换完成`)
             })
-            .catch((reson) => {
-                console.log(`Error when video2Audio...${reson}`)
-                ElMessage({
-                    message: '转换异常',
-                    type: 'error'
-                })
+            .catch((reason) => {
+                console.log('Error when video2Audio...:${reason}', reason)
+                sendNotify(`转换异常:${reason}`)
             });
     }
+    allDisabled.value = false
     return
 }
 
@@ -611,4 +612,8 @@ document.oncontextmenu = function () {
     color: red;
 }
 
+.disable-button {
+    cursor: not-allowed;
+    pointer-events: none;
+}
 </style>

@@ -133,27 +133,18 @@
 <script setup lang="ts">
 import {ref} from 'vue'
 import {open} from '@tauri-apps/api/dialog'
-import {appDataDir, appDir} from '@tauri-apps/api/path'
+import {appDataDir} from '@tauri-apps/api/path'
 import type {TabsPaneContext} from 'element-plus'
 import {ElMessage} from 'element-plus'
 import {FConfig, replaceFilename, Result, upgradeFile2Curr} from '../script/filetools'
 import {convertFileSrc} from '@tauri-apps/api/tauri'
-import {
-    getVideoInfo,
-    Image,
-    imgTo4k,
-    MConfig,
-    merge2Video,
-    mp4ToImgV2,
-    ThreadPool,
-    TMP_4K_DIR,
-    Videoo
-} from "../script/mp4ToImg";
+import {getVideoInfo, Videoo} from "../script/mp4ToImg";
 import {open as shellopen} from "@tauri-apps/api/shell";
-import {ChatModelOptions, ChatModelVal, MultipleVal, ReplaceTypeOptions, ReplaceTypeVal} from "../script/constants";
+import {ChatModelOptions, ChatModelVal, MultipleVal, ReplaceTypeOptions} from "../script/constants";
+import {sendNotify} from "../script/notification";
 
 
-const checked1 = ref(false)
+const checked1 = ref(true)
 const checked2 = ref(false)
 const checked3 = ref(false)
 const checked4 = ref(false)
@@ -297,132 +288,11 @@ const clearDoneAll = () => {
     out_path.value = ''
 }
 
-let basePath = ref('')
-
-async function start() {
-    const arr = path.value.split('/')
-    console.log(arr)
-    console.log(new Date());
-    // 如果没有选择，则退出报错
-    if (!path.value || !vvd.value.name) {
-        ElMessage({
-            message: '未选择文件|目录',
-            type: 'success'
-        })
-        return
-    }
-
-    basePath.value = path.value.replace('/input', '')
-    console.log('basePath:' + basePath.value)
-    console.log(`开始时间：${new Date()}`);
-
-    const result = await mp4ToImgV2(null, basePath.value, vvd.value).catch(() => {
-        console.log("Error when imgTo4k...")
-        // image.status = 'exception'
-    }).finally(() => {
-    })
-    console.log("result ====================>")
-    console.log(result)
-    if (result.rcode !== 0) {
-        ElMessage({
-            message: '转换异常',
-            type: 'error'
-        })
-        return
-    }
-    if (vvd.value && vvd.value.stages) {
-        vvd.value.stages[0].progress = 100;
-        vvd.value.stages[0].status = 'success';
-    }
-    // // 处理视频帧
-    const mConfig: MConfig = {
-        model: model.value,
-        outscale: multiple.value,
-        outpath: TMP_4K_DIR,
-    };
-    const imgs: Image[] = result.images;
-    console.log('basePath:' + basePath.value)
-    // 3.
-    const imgSize = imgs.length;
-    if (thread.value == 1) {
-        console.log('不使用多线程.')
-        for (let i = 0; i < imgSize; i++) {
-            const res = await imgTo4k(mConfig, basePath.value, imgs[i])
-                .catch(() => {
-                    console.log("Error when processing img24k...");
-                    imgs[i].status = 'Exception';
-                });
-            if (res?.rcode == 0) {
-                const progress = (i / imgSize) * 100;  // 将小数转为百分比
-                console.log(`Progress: ${progress}%`);
-                if (vvd.value && vvd.value.stages) {
-                    vvd.value.stages[1].progress = progress;
-                }
-            }
-
-        }
-        if (vvd.value && vvd.value.stages) {
-            vvd.value.stages[1].progress = 100;
-            vvd.value.stages[1].status = 'success';
-        }
-        await doMerge(mConfig);
-
-    } else {
-        console.log(`多线程运行 ${thread.value}`)
-        // 创建新的线程池实例，限制并发任务数为5
-        const threadPool = new ThreadPool(thread.value);
-        // 加载到线程池中的任务
-        for (let i = 0; i < imgSize; i++) {
-            threadPool.run(() =>
-                imgTo4k(mConfig, basePath.value, imgs[i])
-                    .catch(() => {
-                        console.log("Error when processing img24k...");
-                        imgs[i].status = 'Exception';
-                    })
-            );
-        }
-        const progressInterval = setInterval(() => {
-            const progress = threadPool.getProgress() * 100;  // 将小数转为百分比
-            console.log(`Progress: ${progress}%`);
-            if (vvd.value && vvd.value.stages) {
-                vvd.value.stages[1].progress = progress;
-            }
-        }, 1000);  // 每一秒获取一次进度
-
-        // 等待所有任务完成后再执行其他操作
-        threadPool.isDone().then(async () => {
-            console.log("All tasks in the thread pool have completed.");
-            clearInterval(progressInterval);  // 停止定时器
-            if (vvd.value && vvd.value.stages) {
-                vvd.value.stages[1].progress = 100;
-                vvd.value.stages[1].status = 'success';
-            }
-            // 在这执行后续的操作代码。
-            await doMerge(mConfig);
-        });
-    }
-    return
-}
-
-async function doMerge(mConfig: MConfig) {
-    // 在这执行后续的操作代码。
-    const mRes = await merge2Video(mConfig, basePath.value, out_path.value, vvd.value).catch(() => {
-        console.log("Error when merge2Video...")
-    }).finally(() => {
-    })
-    if (vvd.value && vvd.value.stages) {
-        vvd.value.stages[2].progress = 100;
-        vvd.value.stages[2].status = 'success';
-    }
-    console.log(`merge2Video result ==> ${mRes}`)
-    console.log(`完成时间：${new Date()}`);
-}
-
 async function selectOutDir() {
     const selected = await open({
         directory: true,
         multiple: false,
-        defaultPath: await appDir(),
+        defaultPath: await appDataDir(),
     })
     if (selected) {
         out_path.value = selected.toString()
@@ -464,7 +334,7 @@ const startJob = (type: number) => {
             .then(res => {
                 if (res.rcode == 1) {
                     ElMessage({
-                        message: res.failedNum > 0 ? '批量重命名完成,' + res.failedNum + '个失败' : '文件批量重命名成功',
+                        message: res.failedNum && res.failedNum > 0 ? '批量重命名完成,' + res.failedNum + '个失败' : '文件批量重命名成功',
                         type: 'success'
                     })
                 }
@@ -584,4 +454,8 @@ document.oncontextmenu = function () {
     color: red;
 }
 
+.disable-button {
+    cursor: not-allowed;
+    pointer-events: none;
+}
 </style>
