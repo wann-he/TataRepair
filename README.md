@@ -1,5 +1,5 @@
 # 项目说明
-逛github时发现[原项目](https://github.com/Minori-ty/mp4To4K-rust)，但下载发现无法使用，故自己在原项目基础上做了优化再开发  
+[原项目](https://github.com/Minori-ty/mp4To4K-rust)，下载发现无法使用，故自己在原项目基础上做了优化再开发  
 项目基于 ffmpeg 和 Real-ESRGAN 模型，将动漫视频转成4K视频，也可以单独修复低清图片  
 ## 技术栈
 - tauri
