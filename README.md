@@ -3,24 +3,23 @@
 项目基于 ffmpeg 和 Real-ESRGAN 模型，将动漫视频转成4K视频，也可以单独修复低清图片  
 ## 技术栈
 - tauri
-- rust
 - vue3
 - typescript
-## 计划工作
-- 长视频分割为短视频再进行修复、合并
+- rust
 
 # 开发相关
 ## 开发
 1. 下载or克隆代码  
 2. 下载`ffmpeg` 的可执行文件放在 `src-tauri/bin/ffmpeg`目录下  
-3. 下载`realesrgan`训练好的模型放在 `src-tauri/bin/realesrgan`目录下  
-4. 导入依赖：`npm install`  
-5. 运行：`npm run tauri:dev`
+3. 下载`realesrgan`的可执行文件放在 `src-tauri/bin/realesrgan`目录下
+4. 下载`realesrgan`训练好的模型放在 `src-tauri/models`目录下
+5. 导入依赖：`npm install`  
+6. 运行：`npm run tauri:dev`
 ## 打包
 运行 `npm run tauri:build`  
 打包完成后可以`src-tauri/target`目录下找到相关文件：
-- `release/`目录下有可行的.exe文件
-- `release/bundle/msi/`目录下有windows系统下的.msi安装程序  
+- `release/bundle/nsis/`目录下为.exe文件
+- `release/bundle/msi/`目录下为.msi文件 
   
 
 # 其他
