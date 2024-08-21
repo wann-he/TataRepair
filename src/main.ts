@@ -1,10 +1,14 @@
 import {createApp} from 'vue'
-import './style.scss'
 import App from './App.vue'
 import 'element-plus/dist/index.css'
 import ElementPlus from 'element-plus'
 import * as ElementPlusIconsVue from '@element-plus/icons-vue'
 import VideoCard from "./components/video-card.vue";
+import 'element-plus/theme-chalk/src/dark/css-vars.scss'
+import './style.scss'
+import './assets/style/dark.scss'
+import './assets/style/theme.scss'
+import './assets/style/light.scss'
 
 // import 'element-plus/lib/theme-chalk/index.css'
 import router from './router'

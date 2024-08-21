@@ -7,6 +7,9 @@ use tauri::api::dir::is_dir;
 use tauri::SystemTray;
 use tauri::{CustomMenuItem, SystemTrayMenu, SystemTrayMenuItem,SystemTrayEvent};
 use tauri::Manager;
+use reqwest::header::{HeaderMap, HeaderValue, AUTHORIZATION};
+use serde::{Deserialize, Serialize};
+use serde_json::json;
 // use std::path::PathBuf;
 // use tauri::{api::path::resolve_path, command};
 
@@ -66,7 +69,8 @@ fn main() {
             read_dir_file,
             read_dir_file_count,
             trans_path,
-            trans_path_arr
+            trans_path_arr,
+            post_request
         ])
         .run(tauri::generate_context!())
         .expect("error while running tauri application");
@@ -121,6 +125,43 @@ fn trans_path_arr(arr: Vec<String>) -> Vec<String> {
         .map(|s| s.replace("\\", "/"))
         .collect()
 }
+
+
+#[derive(Debug, Deserialize, Serialize)]
+struct Message {
+    role: String,
+    content: String,
+}
+
+#[derive(Debug, Deserialize, Serialize)]
+struct ChatRequest {
+    model: String,
+    messages: Vec<Message>,
+}
+
+
+#[tauri::command]
+async fn post_request(url:&str,token: &str ,data:&str) -> Result<String, String> {
+    let client = reqwest::Client::new();
+    let headers = HeaderMap::from_iter([(AUTHORIZATION, HeaderValue::from_str(&format!("Bearer {}", token)).unwrap())]);
+    println!("<==============================================>");
+    let chat_request: ChatRequest = serde_json::from_str(data).unwrap();
+    println!("{:#?}", chat_request);
+       let body = json!(chat_request);
+      let response = client
+        .post(url)
+        .headers(headers)
+        .json(&body)
+        .send()
+        .await
+        .map_err(|e| format!("Failed to send request: {}", e))?;
+
+    let text = response.text().await.map_err(|e| format!("Failed to read response: {}", e))?;
+    println!("{:#?}", text);
+    println!("<==============================================>");
+    Ok(text)
+}
+
 //
 // async fn locate_executable(path: String) -> Result<PathBuf, Box<dyn std::error::Error>> {
 //     let path = resolve_path(path)?;

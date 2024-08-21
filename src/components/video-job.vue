@@ -1,17 +1,16 @@
 <template>
     <el-scrollbar>
-        <h3>视频转4K</h3>
         <div class="tip">注意: 视频名不要有空格</div>
-        <div class="box select-box">
+        <div class="content-box content-select-box">
             <div @click="select" class="box select-button" :class="allDisabled ? 'disable-button' : '' ">+ 选择视频
             </div>
 
-            <div class="box" @click="start"
+            <div class="content-box" @click="start"
                  :class="[basePath && !allDisabled ? 'start-button' : 'default-button disable-button']"
             >开始转码
             </div>
         </div>
-        <div class="box path-box">
+        <div class="content-box path-box">
             <!--            <el-form-->
             <!--                :label-position="labelPosition"-->
             <!--                label-width="80px"-->
@@ -398,12 +397,6 @@ document.oncontextmenu = function () {
 </script>
 
 <style scoped lang="scss">
-.box {
-    background-color: #F0F0F0;
-    margin: 12px 12px;
-    border-radius: 12px;
-    color: #fff;
-}
 
 .el-card {
     width: 500px;
@@ -434,12 +427,6 @@ document.oncontextmenu = function () {
     display: flex;
     align-items: center;
     justify-content: center;
-}
-
-.select-box {
-    height: 80px;
-    display: flex;
-    align-items: center;
 }
 
 .path-box {

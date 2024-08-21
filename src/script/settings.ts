@@ -7,7 +7,11 @@ import {ChatModelVal} from "./constants";
 export interface UserConf {
     gpt: {
         ak: string;
-        model: 'gpt3.5' | 'gpt-4o';
+        model: 'gpt-3.5-turbo-1106' | 'gpt-4o-mini';
+    },
+    qwen: {
+        ak: string;
+        model: 'qwen-max' | 'qwen-plus-0806' | 'qwen-turbo';
     }
 }
 

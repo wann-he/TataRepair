@@ -1,12 +1,11 @@
 <template>
     <el-scrollbar>
-        <h3>图片高清修复</h3>
-        <div class="box select-box">
-            <div class="box select-button" :class="allDisabled ? 'disable-button' : '' " @click="select">+ 选择图片</div>
+        <div class="content-box content-select-box">
+            <div class="content-box select-button" :class="allDisabled ? 'disable-button' : '' " @click="select">+ 选择图片</div>
 
-            <div class="box" :class="[path && !allDisabled? 'start-button' : 'default-button disable-button']" @click="start">开始转码</div>
+            <div class="content-box" :class="[path && !allDisabled? 'start-button' : 'default-button disable-button']" @click="start">开始转码</div>
         </div>
-        <div class="box path-box">
+        <div class="content-box path-box">
             <el-row>
                 <el-col :span="12">
                     <el-form-item label="模型">
@@ -262,12 +261,6 @@ const openOutDir = () => {
 </script>
 
 <style scoped lang="scss">
-.box {
-    background-color: #F0F0F0;
-    margin: 12px 12px;
-    border-radius: 12px;
-    color: #fff;
-}
 
 .el-container {
     width: 100vw;
@@ -286,11 +279,6 @@ const openOutDir = () => {
     justify-content: center;
 }
 
-.select-box {
-    height: 80px;
-    display: flex;
-    align-items: center;
-}
 
 .path-box {
     height: 100px;

@@ -1,7 +1,8 @@
 import {ref} from "vue";
 
 export const ModelVal = ref<'realesrgan-x4plus' | 'reaesrnet-x4plus' | 'realesrgan-x4plus-anime' | 'realesr-animevideov3'>('realesrgan-x4plus')
-export const ChatModelVal = ref<'gpt3.5' | 'gpt-4o' | 'qwen'>('gpt3.5')
+export const ChatModelVal = ref<'gpt-3.5-turbo-1106' | 'gpt-4o-mini'>('gpt-3.5-turbo-1106')
+export const QwenModelVal = ref<'qwen-max' | 'qwen-plus' | 'qwen-turbo'>('qwen-turbo')
 export const ReplaceTypeVal = ref<1 | 2 | 3 | 4>()
 export const MultipleVal = ref<2 | 3 | 4>(4)
 export const MultipleOptions = [
@@ -39,15 +40,29 @@ export const ModelOptions = [
 
 export const ChatModelOptions = [
     {
-        value: 'gpt3.5',
-        label: 'gpt3.5',
+        value: 'gpt-3.5-turbo-1106',
+        label: 'gpt-3.5-turbo-1106',
     },
     {
-        value: 'gpt-4o',
-        label: 'gpt-4o',
+        value: 'gpt-4o-mini',
+        label: 'gpt-4o-mini',
     },
 ]
 
+export const QwenModelOptions = [
+    {
+        value: 'qwen-turbo',
+        label: 'qwen-turbo',
+    },
+    {
+        value: 'qwen-plus',
+        label: 'qwen-plus',
+    },
+    {
+        value: 'qwen-max',
+        label: 'qwen-max',
+    }
+]
 export const ReplaceTypeOptions = [
     {
         value: 1,

@@ -1,45 +1,56 @@
 <template>
     <el-scrollbar>
-        <h3>设置</h3>
         <span>
             <el-button @click="saveSetting" type="primary" link style="float: right;">保存
         </el-button>
         </span>
-        <div class="box path-box">
+        <div class="content-box path-box">
             <el-space :size="'default'" spacer="" style="margin-top: 10px" direction="vertical" alignment="flex-start">
                 <el-form label-width="auto" style="max-width: 600px">
-
-                    <el-row :gutter="24">
+                    <el-row :gutter="24" style="margin-top: 50px">
                         <el-col :span="24">
-
-                        </el-col>
-
-                        <el-col :span="24">
-                            <el-form-item label="模型">
-                                <el-select v-model="model" class="m-2" placeholder="选择模型" size="default">
-                                    <el-option v-for="item in ChatModelOptions" :key="item.value" :label="item.label"
-                                               :value="item.value"/>
-                                </el-select>
-                            </el-form-item>
-                        </el-col>
-                        <el-col :span="24">
-                            <el-form-item label="AK">
-                                <el-input v-model="api_key" class="m-2" placeholder="ak"
+                            <el-form-item label="通义千问-AK">
+                                <el-input v-model="qwen_api_key" class="m-2" placeholder="通义千问-AK"
                                           size="default"
                                           clearable>
                                 </el-input>
                             </el-form-item>
                         </el-col>
-                        <el-col :span="18"></el-col>
-                        <el-col :span="6">
-
+                        <el-col :span="24">
+                            <el-form-item label="默认模型">
+                                <el-select v-model="qwen_model" class="m-2" placeholder="选择模型" size="default">
+                                    <el-option v-for="item in QwenModelOptions" :key="item.value" :label="item.label"
+                                               :value="item.value"/>
+                                </el-select>
+                            </el-form-item>
                         </el-col>
-
                     </el-row>
-                    <el-row :gutter="24">
-
-                    </el-row>
+                    <el-divider></el-divider>
+<!--                    <el-row :gutter="24">-->
+                    <!--                        <el-col :span="24">-->
+                    <!--                        </el-col>-->
+                    <!--                        <el-col :span="24">-->
+                    <!--                            <el-form-item label="OpenAI-AK">-->
+                    <!--                                <el-input v-model="api_key" class="m-2" placeholder="ak"-->
+                    <!--                                          size="default"-->
+                    <!--                                          clearable>-->
+                    <!--                                </el-input>-->
+                    <!--                            </el-form-item>-->
+                    <!--                        </el-col>-->
+                    <!--                        <el-col :span="24">-->
+                    <!--                            <el-form-item label="默认模型">-->
+                    <!--                                <el-select v-model="gpt_model" class="m-2" placeholder="选择模型" size="default">-->
+                    <!--                                    <el-option v-for="item in ChatModelOptions" :key="item.value" :label="item.label"-->
+                    <!--                                               :value="item.value"/>-->
+                    <!--                                </el-select>-->
+                    <!--                            </el-form-item>-->
+                    <!--                        </el-col>-->
+                    <!--                        <el-col :span="18"></el-col>-->
+                    <!--                        <el-col :span="6">-->
+                    <!--                        </el-col>-->
+                    <!--                    </el-row>-->
                 </el-form>
+
             </el-space>
         </div>
     </el-scrollbar>
@@ -47,11 +58,9 @@
 
 <script setup lang="ts">
 import {ref} from 'vue'
-import {open} from '@tauri-apps/api/dialog'
-import {appDir} from '@tauri-apps/api/path'
 import type {TabsPaneContext} from 'element-plus'
 import {ElMessage} from 'element-plus'
-import {ChatModelOptions, ChatModelVal, MultipleVal} from "../script/constants";
+import {ChatModelVal, MultipleVal, QwenModelOptions, QwenModelVal} from "../script/constants";
 import {readConfig, setConfig, UserConf} from "../script/settings";
 
 
@@ -62,7 +71,8 @@ const onChange1 = (status: boolean) => {
     checked1.value = status
 }
 
-const model =  ChatModelVal
+const gpt_model = ChatModelVal
+const qwen_model = QwenModelVal
 const multiple = MultipleVal
 
 const labelPosition = ref('right')
@@ -79,36 +89,24 @@ const handleClick = (tab: TabsPaneContext, event: Event) => {
 
 /** 选择的目录路径 */
 const path = ref('')
-const out_path = ref('')
 const api_key = ref('')
+const qwen_api_key = ref('')
 const num = ref(1)
 
 readConfig().then((conf) => {
     api_key.value = conf.gpt.ak
-    model.value = conf.gpt.model
+    gpt_model.value = conf.gpt.model
+    qwen_api_key.value = conf.qwen.ak
+    qwen_model.value = conf.qwen.model
 })
 /** 选择目录 */
 
-
-let basePath = ref('')
-
-async function selectOutDir() {
-    const selected = await open({
-        directory: true,
-        multiple: false,
-        defaultPath: await appDir(),
-    })
-    if (selected) {
-        out_path.value = selected.toString()
-        console.log('out_path:' + out_path.value)
-        // 当选择时才修改path的值
-        console.log(selected)
-    }
-}
-
 const saveSetting = () => {
     console.log("saveSetting.")
-    const conf: UserConf = {gpt: {ak: api_key.value, model: model.value}}
+    const conf: UserConf = {
+        gpt: {ak: api_key.value, model: gpt_model.value},
+        qwen: {ak: qwen_api_key.value, model: qwen_model.value}
+    }
     setConfig(conf).then((conf) => {
         ElMessage({
             message: conf,
@@ -127,12 +125,6 @@ document.oncontextmenu = function () {
 </script>
 
 <style scoped lang="scss">
-.box {
-    background-color: #F0F0F0;
-    margin: 50px 10px;
-    border-radius: 12px;
-    color: #fff;
-}
 
 .el-card {
     width: 500px;

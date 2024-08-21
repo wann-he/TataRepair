@@ -1,7 +1,5 @@
 <template>
     <el-scrollbar>
-        <h3>文件工具</h3>
-        <!--        <div class="tip">注意: 视频名不要有空格</div>-->
         <el-space :size="'default'" spacer="" style="margin-top: 10px">
             <el-check-tag :checked="checked1" type="primary" @change="onChange1">
                 文件提级
@@ -17,7 +15,7 @@
             <!--            </el-check-tag>-->
         </el-space>
 
-        <div class="box path-box">
+        <div class="content-box path-box">
             <el-space :size="'default'" spacer="" style="margin-top: 10px" direction="vertical" alignment="flex-start">
                 <el-row :gutter="24">
                     <el-col :span="24">
@@ -100,9 +98,7 @@
             </el-space>
         </div>
 
-        <div class="box">
-            <!--            <div class="box select-button" @click="select">+ 选择视频</div>-->
-            <!--            <div class="box" :class="[path ? 'start-button' : 'default-button']" @click="start">开始转码</div>-->
+        <div class="content-box">
             <div style="float: right">
                 <el-button @click="startJob(1)" type="primary" link :disabled="!out_path" v-show="checked1">开始文件提级
                 </el-button>
@@ -363,12 +359,7 @@ document.oncontextmenu = function () {
 </script>
 
 <style scoped lang="scss">
-.box {
-    background-color: #F0F0F0;
-    margin: 12px 12px;
-    border-radius: 12px;
-    color: #fff;
-}
+
 
 .el-card {
     width: 500px;

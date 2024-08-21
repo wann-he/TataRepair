@@ -3,10 +3,13 @@
         <div data-tauri-drag-region class="titlebar">
             <div data-tauri-drag-region class="title-aside"></div>
             <div>
-<!--                <div class="titlebar-button" id="titlebar-setting" @click="go2Setting">-->
-<!--&lt;!&ndash;                    <span style="padding: 5px 5px; color: #f0f0f0">设置</span>&ndash;&gt;-->
-<!--                    <el-icon color="white"><Setting /></el-icon>-->
-<!--                </div>-->
+<!--                <button @click="toggleDark">-->
+<!--                    当前状态是: {{ isDark }}-->
+<!--                </button>-->
+                <div class="titlebar-button" id="titlebar-setting" :class="{ selected: currentSelected === 'setting' }"
+                     @click="select('setting')">
+                    <img src="./assets/设置.svg" alt="minimize"/>
+                </div>
                 <div class="titlebar-button" id="titlebar-minimize" @click="minimize">
                     <img src="./assets/最小化.svg" alt="minimize"/>
                 </div>
@@ -25,25 +28,25 @@
                 <el-icon>
                     <Picture/>
                 </el-icon>
-                <span style="padding-left: 10px; color: #111">图片修复</span>
+                <span class="title-content">图片修复</span>
             </div>
             <div class="box title" :class="{ selected: currentSelected === 'video' }" @click="select('video')">
                 <el-icon>
                     <VideoCamera/>
                 </el-icon>
-                <span style="padding-left: 10px; color: #111">视频转4K</span>
+                <span class="title-content">视频转4K</span>
             </div>
             <div class="box title" :class="{ selected: currentSelected === 'file' }" @click="select('file')">
                 <el-icon>
                     <Folder/>
                 </el-icon>
-                <span style="padding-left: 10px; color: #111">文件小工具</span>
+                <span class="title-content">文件小工具</span>
             </div>
             <div class="box title" :class="{ selected: currentSelected === 'media' }" @click="select('media')">
                 <el-icon>
                     <Film/>
                 </el-icon>
-                <span style="padding-left: 10px; color: #111">音视频工具</span>
+                <span class="title-content">音视频工具</span>
             </div>
         </el-aside>
         <el-main>
@@ -58,29 +61,22 @@
 
 <script setup lang="ts">
 import {ref} from 'vue'
-import {PictureFilled, VideoCameraFilled} from '@element-plus/icons-vue'
-import {minimize, closeApp} from './system'
+import {closeApp, minimize} from './system'
 import max from './assets/最大化.svg'
 import remin from './assets/还原.svg'
 import {appWindow} from '@tauri-apps/api/window'
-import {getffmpeg} from './script/getffmpeg'
 import {useRouter} from 'vue-router'
-import {sendNotify} from "./script/notification";
+import { useDark, useToggle } from '@vueuse/core'
 
+const isDark = useDark()
+const toggleDark = useToggle(isDark)
 const router = useRouter()
 
-/** ffmpeg的路径 */
-const ffmpegPath = ref('')
-
-/** realesrgan的路径 */
-const realesrgan = ref('')
 
 const currentSelected = ref('pic')
 
 /** 初始化时要做的事情 */
 async function init() {
-    // 获取ffmpeg路径
-    ;[ffmpegPath.value, realesrgan.value] = await getffmpeg()
 }
 
 init()
@@ -100,6 +96,7 @@ function go2Pic() {
 function go2File() {
     router.push('/file-job')
 }
+
 function go2Media() {
     router.push('/media')
 }
@@ -128,7 +125,7 @@ function toggleMaximize() {
     isMax.value = !isMax.value
 }
 
-function select(type: 'pic' | 'video' | 'file'|'media') {
+function select(type: 'pic' | 'video' | 'file' | 'media' | 'setting') {
     currentSelected.value = type;
     switch (type) {
         case 'pic':
@@ -143,6 +140,9 @@ function select(type: 'pic' | 'video' | 'file'|'media') {
         case 'media':
             go2Media();
             break;
+        case 'setting':
+            go2Setting();
+            break;
         default:
             break;
     }
@@ -151,10 +151,14 @@ function select(type: 'pic' | 'video' | 'file'|'media') {
 
 <style scoped lang="scss">
 .box {
-    background-color: #CCCCCC;
+    background-color: #21242a;
     margin: 0 auto;
     border-radius: 9px;
     color: #685479;
+    .title-content{
+        padding-left: 10px;
+        color: #dadee4;
+    }
 }
 
 .el-card {
@@ -195,13 +199,14 @@ function select(type: 'pic' | 'video' | 'file'|'media') {
 }
 
 .select-button {
-    background-color: #01c2ce;
+    background-color: #2d3333;
     @extend %btn;
 
     &:hover {
         box-shadow: 0px 0px 5px #01c2ce;
     }
 }
+
 .selected {
     background-color: #01c2ce; /* 选择的颜色 */
 }

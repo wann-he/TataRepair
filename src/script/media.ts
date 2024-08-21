@@ -32,7 +32,7 @@ export async function video2Audio(mediaConf: MediaConfig, medias: Videoo[]): Pro
                         '-i', vd.path, '-vn',
                         '-c:a', 'flac',
                         `${out_path}\\${vd.name}.flac`]
-                    ,{ encoding: 'utf8' });
+                    , {encoding: 'utf8'});
             } else {
                 //ffmpeg -i input.mp4 -vn -c:a libmp3lame -q:a 0 output.mp3
                 command = Command.sidecar("bin/ffmpeg/ffmpeg",
@@ -40,7 +40,7 @@ export async function video2Audio(mediaConf: MediaConfig, medias: Videoo[]): Pro
                         '-i', vd.path, '-vn',
                         '-c:a', 'libmp3lame',
                         '-q:a', '0',
-                        `${out_path}\\${vd.name}.mp3`],{ encoding: 'utf8' });
+                        `${out_path}\\${vd.name}.mp3`], {encoding: 'utf8'});
             }
             console.log(command)
 
@@ -94,7 +94,7 @@ export async function convert(mediaConf: MediaConfig, medias: Videoo[]): Promise
                 '-c:a', 'aac',
                 '-b:a', '128k',
                 `${out_path}\\${vd.name}${vd.suffix}.${mediaConf.out_video_scheme}`]
-            ,{ encoding: 'utf8' });
+            , {encoding: 'utf8'});
         // ffmpeg -i "i.mov" -c:v libx264 -preset medium -crf 23 -c:a aac -b:a 128k "o.mp4"
         console.log(command)
 
@@ -117,4 +117,21 @@ export async function convert(mediaConf: MediaConfig, medias: Videoo[]): Promise
     }
 
     return {rcode: 1, failedNum: failedNum};
+}
+
+export async function executeCustomCommand(custom_command: string): Promise<Result> {
+    console.log('============ 开始执行自定义命令 ============')
+    const args: string[] = custom_command.replace('ffmpeg', '').trimStart().trimEnd().split(' ');
+    let command: Command = Command.sidecar("bin/ffmpeg/ffmpeg", args
+        , {encoding: 'utf8'});
+    console.log(command)
+
+    command.on('close', () => console.log('任务完成 -> execute_custom_command'))
+    command.on('error', error => console.error(`command error: "${error}"`));
+    command.stdout.on('data', line => console.log(`command stdout: "${line}"`));
+    command.stderr.on('data', (line) => console.log(`command stderr: "${line}"`))
+    const output = await command.execute()
+    console.log('output ==> ', output)
+    console.log('============ 自定义命令执行完成 ============')
+    return {rcode: 0, failedNum: 0};
 }

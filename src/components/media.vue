@@ -1,41 +1,37 @@
 <template>
     <el-scrollbar>
-        <h3>音视频工具</h3>
         <el-space :size="'default'" spacer="" style="margin-top: 10px">
             <el-check-tag :checked="checked1" type="primary" @change="onChange1">
                 音频提取
             </el-check-tag>
-            <!--            <el-check-tag :checked="checked2" type="primary" @change="onChange2">-->
-            <!--                音视频合并-->
-            <!--            </el-check-tag>-->
             <el-check-tag :checked="checked3" type="success" @change="onChange3">
                 视频-格式转换
             </el-check-tag>
-            <!--            <el-check-tag :checked="checked4" type="danger" @change="onChange4">-->
-            <!--                音频-格式转换-->
-            <!--            </el-check-tag>-->
+            <el-check-tag :checked="checked4" type="danger" @change="onChange4">
+                命令行模式-AI
+            </el-check-tag>
         </el-space>
 
-        <div class="box select-box">
-            <div class="box select-button"
+        <div class="content-box content-select-box" v-show="checked1 || checked3">
+            <div class="content-box select-button"
                  :class="allDisabled ? 'disable-button' : '' "
-                 @click="selectVideo" v-show="checked1 || checked2 || checked3">+ 选择视频
+                 @click="selectVideo" v-show="checked1 ||  checked3">+ 选择视频
             </div>
-            <div class="box select-button-green"
+            <div class="content-box select-button-green"
                  :class="allDisabled ? 'disable-button' : '' "
-                 @click="selectAudio" v-show=" checked2 || checked4">+ 选择音频
+                 @click="selectAudio" v-show=" checked2">+ 选择音频
             </div>
-            <div class="box" @click="start"
+            <div class=content-box @click="start"
                  :class="[out_path && !allDisabled ? 'start-button' : 'default-button disable-button']"
             >开始转码
             </div>
         </div>
 
 
-        <div class="box path-box">
+        <div class="content-box path-box">
             <el-space :size="'default'" spacer="" style="margin-top: 10px" direction="vertical" alignment="flex-start">
                 <el-row :gutter="24">
-                    <el-col :span="24">
+                    <el-col :span="24" v-show="checked1 || checked2">
                         <el-form-item label="输出文件夹路径">
                             <el-col :span="20">
                                 <el-input v-model="out_path" class="m-2" placeholder="输出文件夹路径"
@@ -60,6 +56,7 @@
                     <el-col :span="6">
                     </el-col>
                 </el-row>
+
                 <el-row :gutter="24">
                     <el-col :span="24" v-show="checked1">
                         <el-form-item label="输出音频格式">
@@ -79,17 +76,67 @@
                             </el-radio-group>
                         </el-form-item>
                     </el-col>
-                    <el-col :span="12" v-show="checked4">
-                        <el-form-item label="完成后删除子文件夹">
-                            <el-switch v-model="delSubAfter" :disabled="allDisabled"/>
+                    <el-col :span="24" v-show="checked2">
+                        <el-form-item label="输出音频格式">
+                            <el-radio-group v-model="out_audio_scheme" :disabled="allDisabled">
+                                <el-radio value="mp3">mp3</el-radio>
+                                <el-radio value="flac">flac</el-radio>
+                            </el-radio-group>
                         </el-form-item>
                     </el-col>
                 </el-row>
 
+                <el-row :gutter="24" v-show="checked4">
+<!--                    <div class="tip">注意: 请先在设置中配置通义千问的API密钥, 否则将无法使用。</div>-->
+                    <el-col :span="24">
+                        <el-form-item label="选择模型">
+                            <el-select v-model="qwen_model" class="m-2" placeholder="选择模型" size="default">
+                                <el-option v-for="item in QwenModelOptions" :key="item.value" :label="item.label"
+                                           :value="item.value"/>
+                            </el-select>
+                        </el-form-item>
+                    </el-col>
+                    <el-col :span="24">
+                        <el-form-item label="需求描述">
+                            <el-input v-model="question" class="m-2"
+                                      placeholder="描述媒体文件处理需求，注意一定是用单行ffmpeg命令可以处理的需求"
+                                      autosize
+                                      :rows="2"
+                                      type="textarea"
+                                      clearable>
+                            </el-input>
+                        </el-form-item>
+                    </el-col>
+                    <el-col :span="18">
+                    </el-col>
+                    <el-col :span="6">
+                        <el-button @click="chat_chat()" type="primary" link style="float: right;">生成命令行
+                        </el-button>
+                    </el-col>
+                    <el-col :span="24">
+                        <el-form-item label="生成命令">
+                            <el-input
+                                v-model="answer"
+                                autosize
+                                placeholder="生成的命令行可以自行修改，确保命令行以 ffmpeg 开头，否则无法执行"
+                            />
+                        </el-form-item>
+                    </el-col>
+                    <el-col :span="18" >
+                        <el-form-item label="命令" v-show="executable">
+                            <el-tag type="info">{{ answer }}</el-tag>
+                        </el-form-item>
+                    </el-col>
+                    <el-col :span="6">
+                        <el-button :disabled="!executable" @click="execute()" type="primary" link
+                                   style="float: right;">执 行
+                        </el-button>
+                    </el-col>
+                </el-row>
             </el-space>
         </div>
 
-        <el-tabs v-model="activeName" class="demo-tabs" @tab-click="handleClick">
+        <el-tabs v-model="activeName" class="demo-tabs" @tab-click="handleClick" v-show="checked1 || checked3">
             <el-tab-pane label="任务列表" name="first">
                 <el-row :gutter="24">
                     <el-col :span="24">
@@ -111,30 +158,27 @@
                     </el-col>
                 </el-row>
             </el-tab-pane>
-            <!--            <el-tab-pane label="完成" name="second">-->
-            <!--                <Complete v-for="file in completeList" :key="file" :file-name="file"/>-->
-            <!--            </el-tab-pane>-->
 
         </el-tabs>
     </el-scrollbar>
 </template>
 
 <script setup lang="ts">
-import {ref} from 'vue'
+import {ref, watch} from 'vue'
 import {open} from '@tauri-apps/api/dialog'
 import {appDataDir} from '@tauri-apps/api/path'
 import type {TabsPaneContext} from 'element-plus'
 import {ElMessage} from 'element-plus'
-import {FConfig, replaceFilename, upgradeFile2Curr} from '../script/filetools'
 import {convertFileSrc} from '@tauri-apps/api/tauri'
 import {open as shellopen} from "@tauri-apps/api/shell";
-import {ChatModelVal, MultipleVal, ReplaceTypeVal} from "../script/constants";
-import {convert, video2Audio} from "../script/media";
+import {MultipleVal, QwenModelOptions, QwenModelVal, ReplaceTypeVal} from "../script/constants";
+import {convert, executeCustomCommand, video2Audio} from "../script/media";
 import VideoCard from "./video-card.vue";
 import MediaCardPair, {MediaInfo} from "./media-card-pair.vue";
 import {basename} from "pathe";
-import {getVideoInfo, Videoo} from "../script/mp4ToImg";
+import {Videoo} from "../script/mp4ToImg";
 import {sendNotify} from "../script/notification";
+import {completeChat} from "../script/openai";
 
 const allDisabled = ref(false)
 
@@ -144,11 +188,13 @@ const checked3 = ref(false)
 const checked4 = ref(false)
 const checked5 = ref(false)
 
-const recursively = ref(false)
-const delSubAfter = ref(false)
 
-const out_audio_scheme = ref<'flac'|'mp3'>('mp3')
+const out_audio_scheme = ref<'flac' | 'mp3'>('mp3')
 const out_video_scheme = ref<'mp4' | 'mkv' | 'mov' | '3gp'>('mp4')
+
+const question = ref('')
+const answer = ref('')
+const executable = ref(false)
 
 const onChange1 = (status: boolean) => {
     checked1.value = status
@@ -204,22 +250,12 @@ const onChange5 = (status: boolean) => {
     }
 }
 
-const model = ChatModelVal
+const qwen_model = QwenModelVal
 const replaceType = ReplaceTypeVal
 const multiple = MultipleVal
 const codingModeVal = ref<'libx264' | 'hevc_nvenc'>('libx264')
 
 const suffixVal = ref<'_copy' | '_opt_origin'>('_opt_origin')
-const suffixOptions = [
-    {
-        value: '_copy',
-        label: '不改变原数据',
-    },
-    {
-        value: '_opt_origin',
-        label: '直接操作原数据',
-    }
-]
 const activeName = ref('first')
 const labelPosition = ref('right')
 const thread = ref(1);
@@ -234,6 +270,57 @@ const mediaPairs = ref([
 ]);
 const videoList: Videoo[] = []
 const videos = ref(videoList);
+
+watch(
+    answer,
+    (newval, oldval) => {
+        if (newval.startsWith('ffmpeg')) {
+            executable.value = true;
+        } else {
+            executable.value = false;
+        }
+        ;
+    },
+    // {immediate: true}
+);
+
+const chat_chat = () => {
+    completeChat(qwen_model.value, question.value)
+        .then((res) => {
+            answer.value = res;
+            // executable.value = true;
+        })
+        .catch((reason) => {
+            answer.value =  reason
+        })
+}
+
+const execute = () => {
+    const text: string = answer.value;
+    if (text || !text.startsWith('ffmpeg')) {
+        ElMessage({
+            message: '没有可执行的命令行',
+            type: 'warning'
+        })
+        return;
+    }
+    executeCustomCommand(answer.value)
+        .then((res) => {
+            // sendNotify(res.data);
+            ElMessage({
+                message: res.msg,
+                type: res.rcode === 0 ? 'success' : 'error'
+            })
+            return;
+        })
+        .catch((reason) => {
+            ElMessage({
+                message: 'Error:' + reason,
+                type: 'error'
+            })
+            return;
+        });
+}
 
 /**
  * 切换面板
@@ -456,51 +543,6 @@ async function selectVideos() {
 const openOutDir = () => {
     console.log("openOutDir.")
     shellopen(out_path.value);
-    // invoke<string[]>('open_out_dir', {path: path.value})
-}
-
-
-const startJob = (type: number) => {
-    console.log("startJob." + type)
-    if (type == 1) {
-        upgradeFile2Curr(out_path.value, recursively.value, delSubAfter.value).then(res => {
-            if (res.rcode == 1) {
-                ElMessage({
-                    message: '文件提级成功',
-                    type: 'success'
-                })
-            }
-            return
-        }).finally();
-    }
-    if (type == 2) {
-        const fconfig: FConfig = {
-            tobe_replaced: tobe_replaced.value,
-            replaced_with: replaced_with.value,
-            type: replaceType.value,
-            num: num.value
-        }
-        replaceFilename(out_path.value, fconfig)
-            .then(res => {
-                if (res.rcode == 1) {
-                    ElMessage({
-                        message: res.failedNum > 0 ? '批量重命名完成,' + res.failedNum + '个失败' : '文件批量重命名成功',
-                        type: 'success'
-                    })
-                }
-                return
-            })
-            .finally();
-    }
-}
-
-const replaceTypeChange = (value: number) => {
-    if (value == 3 || value == 4 || value == 5) {
-        numShow.value = true
-    } else {
-        num.value = 1
-        numShow.value = false
-    }
 }
 
 // 禁止右键
@@ -512,12 +554,6 @@ document.oncontextmenu = function () {
 </script>
 
 <style scoped lang="scss">
-.box {
-    background-color: #F0F0F0;
-    margin: 12px 12px;
-    border-radius: 12px;
-    color: #fff;
-}
 
 .el-card {
     width: 500px;
@@ -548,12 +584,6 @@ document.oncontextmenu = function () {
     display: flex;
     align-items: center;
     justify-content: center;
-}
-
-.select-box {
-    height: 80px;
-    display: flex;
-    align-items: center;
 }
 
 .path-box {
