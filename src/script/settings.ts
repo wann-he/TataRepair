@@ -1,7 +1,8 @@
 import {resolveResource} from '@tauri-apps/api/path'
 // alternatively, use `window.__TAURI__.path.resolveResource`
-import {readTextFile, writeTextFile} from '@tauri-apps/api/fs'
+import {BaseDirectory, readTextFile, writeTextFile} from '@tauri-apps/api/fs'
 import {ChatModelVal} from "./constants";
+import {sendNotify} from "./notification";
 
 // alternatively, use `window.__TAURI__.fs.readTextFile`
 export interface UserConf {
@@ -11,7 +12,8 @@ export interface UserConf {
     },
     qwen: {
         ak: string;
-        model: 'qwen-max' | 'qwen-plus-0806' | 'qwen-turbo';
+        models: string[];
+        optional_models: string[];
     }
 }
 
@@ -24,6 +26,12 @@ export async function readConfig(): Promise<UserConf> {
     return conf
 }
 
+export async function ffmpegPrompt(): Promise<string> {
+    const resourcePath = await resolveResource('conf/ffmpeg.prompt')
+    return await readTextFile(resourcePath)
+}
+
+
 export async function setConfig(conf: UserConf): Promise<any> {
     // `lang/de.json` is the value specified on `tauri.conf.json > tauri > bundle > resources`
     const resourcePath = await resolveResource('conf/user.conf')
@@ -32,6 +40,7 @@ export async function setConfig(conf: UserConf): Promise<any> {
             console.log('写配置成功')
         })
         .catch((e) => {
+            sendNotify('写配置失败' + e);
             console.log(e)
         })
     console.log(conf) // This will print 'Guten Tag!' to the devtools console

@@ -1,6 +1,5 @@
 <template>
     <el-scrollbar>
-        <div class="tip">注意: 视频名不要有空格</div>
         <div class="content-box content-select-box">
             <div @click="select" class="box select-button" :class="allDisabled ? 'disable-button' : '' ">+ 选择视频
             </div>
@@ -11,10 +10,6 @@
             </div>
         </div>
         <div class="content-box path-box">
-            <!--            <el-form-->
-            <!--                :label-position="labelPosition"-->
-            <!--                label-width="80px"-->
-            <!--            >-->
             <el-row :gutter="24">
                 <el-col :span="12">
                     <el-form-item label="选择模型">

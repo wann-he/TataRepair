@@ -361,10 +361,6 @@ document.oncontextmenu = function () {
 <style scoped lang="scss">
 
 
-.el-card {
-    width: 500px;
-}
-
 .el-col {
     padding: 0;
 }

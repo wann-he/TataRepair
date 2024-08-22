@@ -17,16 +17,20 @@
                             </el-form-item>
                         </el-col>
                         <el-col :span="24">
-                            <el-form-item label="默认模型">
-                                <el-select v-model="qwen_model" class="m-2" placeholder="选择模型" size="default">
-                                    <el-option v-for="item in QwenModelOptions" :key="item.value" :label="item.label"
-                                               :value="item.value"/>
+                            <el-form-item label="可选模型">
+                                <el-select v-model="qwen_models"
+                                           multiple
+                                           filterable
+                                           allow-create
+                                           class="m-2" placeholder="可选模型" size="default">
+                                    <el-option v-for="item in QWEN_OPTIONAL_MODELS" :key="item" :label="item"
+                                               :value="item"/>
                                 </el-select>
                             </el-form-item>
                         </el-col>
                     </el-row>
                     <el-divider></el-divider>
-<!--                    <el-row :gutter="24">-->
+                    <!--                    <el-row :gutter="24">-->
                     <!--                        <el-col :span="24">-->
                     <!--                        </el-col>-->
                     <!--                        <el-col :span="24">-->
@@ -92,22 +96,48 @@ const path = ref('')
 const api_key = ref('')
 const qwen_api_key = ref('')
 const num = ref(1)
+const models = ref([''])
+const QWEN_OPTIONAL_MODELS = ref([''])
+const qwen_models = ref([''])
+
 
 readConfig().then((conf) => {
     api_key.value = conf.gpt.ak
     gpt_model.value = conf.gpt.model
     qwen_api_key.value = conf.qwen.ak
-    qwen_model.value = conf.qwen.model
+    qwen_models.value = conf.qwen.models
+    QWEN_OPTIONAL_MODELS.value = conf.qwen.optional_models
 })
-/** 选择目录 */
 
 const saveSetting = () => {
     console.log("saveSetting.")
+    // 去重 qwen_models.value
+    const uniqueQwenModels = [...new Set(qwen_models.value)];
+
+    // 去重 QWEN_OPTIONAL_MODELS.value
+    const uniqueOptionalModels = [...new Set(QWEN_OPTIONAL_MODELS.value)];
+
+    // 遍历 uniqueQwenModels 并添加未存在的模型到 uniqueOptionalModels
+    uniqueQwenModels.forEach(model => {
+        if (!uniqueOptionalModels.includes(model)) {
+            uniqueOptionalModels.push(model);
+        }
+    });
+
     const conf: UserConf = {
         gpt: {ak: api_key.value, model: gpt_model.value},
-        qwen: {ak: qwen_api_key.value, model: qwen_model.value}
-    }
+        qwen: {
+            ak: qwen_api_key.value,
+            models: uniqueQwenModels,
+            optional_models: uniqueOptionalModels
+        }
+    };
     setConfig(conf).then((conf) => {
+        api_key.value = conf.gpt.ak
+        gpt_model.value = conf.gpt.model
+        qwen_api_key.value = conf.qwen.ak
+        qwen_models.value = conf.qwen.models
+        QWEN_OPTIONAL_MODELS.value = conf.qwen.optional_models
         ElMessage({
             message: conf,
             type: 'success'

@@ -9,9 +9,7 @@ use tauri::{CustomMenuItem, SystemTrayMenu, SystemTrayMenuItem,SystemTrayEvent};
 use tauri::Manager;
 use reqwest::header::{HeaderMap, HeaderValue, AUTHORIZATION};
 use serde::{Deserialize, Serialize};
-use serde_json::json;
-// use std::path::PathBuf;
-// use tauri::{api::path::resolve_path, command};
+use reqwest::header::CONTENT_TYPE;
 
 
 
@@ -130,34 +128,41 @@ fn trans_path_arr(arr: Vec<String>) -> Vec<String> {
 #[derive(Debug, Deserialize, Serialize)]
 struct Message {
     role: String,
-    content: String,
+    content: String
 }
 
 #[derive(Debug, Deserialize, Serialize)]
 struct ChatRequest {
     model: String,
-    messages: Vec<Message>,
+    messages: Vec<Message>
 }
 
 
 #[tauri::command]
 async fn post_request(url:&str,token: &str ,data:&str) -> Result<String, String> {
     let client = reqwest::Client::new();
-    let headers = HeaderMap::from_iter([(AUTHORIZATION, HeaderValue::from_str(&format!("Bearer {}", token)).unwrap())]);
+//     let headers = HeaderMap::from_iter([(AUTHORIZATION, HeaderValue::from_str(&format!("Bearer {}", token)).unwrap())]);
+    let headers = HeaderMap::from_iter([
+        (AUTHORIZATION, HeaderValue::from_str(&format!("Bearer {}", token)).unwrap()),
+        (CONTENT_TYPE, HeaderValue::from_static("application/json")),
+    ]);
     println!("<==============================================>");
+    println!("url： {}",url.to_string());
+    println!("token：{}",token.to_string());
+    println!("data： {}",data.to_string());
     let chat_request: ChatRequest = serde_json::from_str(data).unwrap();
     println!("{:#?}", chat_request);
-       let body = json!(chat_request);
+
       let response = client
         .post(url)
         .headers(headers)
-        .json(&body)
+        .json(&chat_request)
         .send()
         .await
         .map_err(|e| format!("Failed to send request: {}", e))?;
 
     let text = response.text().await.map_err(|e| format!("Failed to read response: {}", e))?;
-    println!("{:#?}", text);
+    println!("错误：  {:#?}", text);
     println!("<==============================================>");
     Ok(text)
 }

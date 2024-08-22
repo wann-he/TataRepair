@@ -6,7 +6,7 @@
             <div class="content-box" :class="[path && !allDisabled? 'start-button' : 'default-button disable-button']" @click="start">开始转码</div>
         </div>
         <div class="content-box path-box">
-            <el-row>
+            <el-row :gutter="24">
                 <el-col :span="12">
                     <el-form-item label="模型">
                         <el-select v-model="model" class="m-2" placeholder="选择模型" size="default" :disabled="allDisabled">

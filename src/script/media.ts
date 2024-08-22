@@ -1,8 +1,6 @@
 import {Result} from "./filetools";
 import {Videoo} from "./mp4ToImg";
-import {basename} from "pathe";
 import {Command} from "@tauri-apps/api/shell";
-import {MediaInfo} from "../components/media-card-pair.vue";
 
 
 export interface MediaConfig {
@@ -121,7 +119,10 @@ export async function convert(mediaConf: MediaConfig, medias: Videoo[]): Promise
 
 export async function executeCustomCommand(custom_command: string): Promise<Result> {
     console.log('============ 开始执行自定义命令 ============')
-    const args: string[] = custom_command.replace('ffmpeg', '').trimStart().trimEnd().split(' ');
+    const args: string[] = custom_command.replace('ffmpeg', '')
+        .replaceAll('"', '')
+        .replaceAll('\'', '')
+        .trimStart().trimEnd().split(' ');
     let command: Command = Command.sidecar("bin/ffmpeg/ffmpeg", args
         , {encoding: 'utf8'});
     console.log(command)
@@ -133,5 +134,5 @@ export async function executeCustomCommand(custom_command: string): Promise<Resu
     const output = await command.execute()
     console.log('output ==> ', output)
     console.log('============ 自定义命令执行完成 ============')
-    return {rcode: 0, failedNum: 0};
+    return {rcode: output.code == undefined ? -1 : output.code, failedNum: 0, data: output.stderr};
 }

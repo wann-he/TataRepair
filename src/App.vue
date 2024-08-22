@@ -3,9 +3,9 @@
         <div data-tauri-drag-region class="titlebar">
             <div data-tauri-drag-region class="title-aside"></div>
             <div>
-<!--                <button @click="toggleDark">-->
-<!--                    当前状态是: {{ isDark }}-->
-<!--                </button>-->
+                <div class="titlebar-button" id="titlebar-setting" @click="toggleDark()">
+                    <img src="./assets/暗黑.svg" alt="minimize"/>
+                </div>
                 <div class="titlebar-button" id="titlebar-setting" :class="{ selected: currentSelected === 'setting' }"
                      @click="select('setting')">
                     <img src="./assets/设置.svg" alt="minimize"/>
@@ -66,7 +66,8 @@ import max from './assets/最大化.svg'
 import remin from './assets/还原.svg'
 import {appWindow} from '@tauri-apps/api/window'
 import {useRouter} from 'vue-router'
-import { useDark, useToggle } from '@vueuse/core'
+import {useDark, useToggle} from '@vueuse/core'
+
 
 const isDark = useDark()
 const toggleDark = useToggle(isDark)
@@ -77,32 +78,34 @@ const currentSelected = ref('pic')
 
 /** 初始化时要做的事情 */
 async function init() {
+    useToggle(true)
 }
+
 
 init()
 
 function goToCopyright() {
-    router.push('/copyright')
+    router.push({path: '/copyright', replace: true})
 }
 
 function go2Video() {
-    router.push('/video-job')
+    router.push({path: '/video-job', replace: false})
 }
 
 function go2Pic() {
-    router.push('/pic-job')
+    router.push({path: '/pic-job', replace: false})
 }
 
 function go2File() {
-    router.push('/file-job')
+    router.push({path: '/file-job', replace: false})
 }
 
 function go2Media() {
-    router.push('/media')
+    router.push({path: '/media', replace: false})
 }
 
 function go2Setting() {
-    router.push('/setting')
+    router.push({path: '/setting', replace: true})
 }
 
 /**
@@ -155,14 +158,11 @@ function select(type: 'pic' | 'video' | 'file' | 'media' | 'setting') {
     margin: 0 auto;
     border-radius: 9px;
     color: #685479;
-    .title-content{
+
+    .title-content {
         padding-left: 10px;
         color: #dadee4;
     }
-}
-
-.el-card {
-    width: 500px;
 }
 
 .el-container {

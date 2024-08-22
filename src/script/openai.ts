@@ -1,8 +1,6 @@
 import OpenAI from "openai";
 import {readConfig} from "./settings";
-import {ChatCompletionCreateParamsNonStreaming} from "openai/src/resources/chat/completions";
 import {invoke} from "@tauri-apps/api/tauri";
-// import { fetch } from 'undici'; // as one example
 
 
 const prompt_template: string = `
@@ -14,13 +12,14 @@ const prompt_template: string = `
 3. 如果【需求】通过【ffmpeg命令】无法处理，请直接返回【错误】，不要做多余的事情！
 4. 认真思考【需求】，尽可能高质量的完成媒体处理；
 5. 处理媒体的命令一定不会修改或者损坏原媒体文件；
-6. 如果媒体输出目录未声明，则默认输出到当前目录。
-\n
+6. 文件夹或者文件名无需使用双引号或者单引号；
+7. 如果媒体输出目录未声明，则默认输出到当前目录。
+
 ### 示例【需求】
 从“C:\\Desktop\\pic\\input.mp4”中提取出音频文件，要无损音质。
 ### 示例【ffmpeg命令】
-ffmpeg -i 'C:\\Desktop\\pic\\input.mp4' -vn -c:a flac 'C:\\Desktop\\pic\\output.flac'
-\n
+ffmpeg -i C:\\Desktop\\pic\\input.mp4 -vn -c:a flac C:\\Desktop\\pic\\output.flac
+
 现在让我们开始任务：
 ### 【需求】
 {0}
@@ -38,9 +37,9 @@ export async function completeChat(model: string, question: string): Promise<str
     let completion;
     if (model.startsWith('qwen')) {
         if (!conf.qwen.ak) {
-            throw new Error('通义千问的AK未设置')
+            return '通义千问的AK未设置';
         }
-        completion = await callPostRequest('https://dashscope.aliyuncs.co/compatible-mode/v1/chat/completions'
+        completion = await callPostRequest('https://dashscope.aliyuncs.com/compatible-mode/v1/chat/completions'
             , conf.qwen.ak
             , JSON.stringify({
                 "model": model,

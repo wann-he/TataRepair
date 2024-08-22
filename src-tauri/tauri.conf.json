@@ -4,11 +4,12 @@
     "beforeBuildCommand": "yarn build",
     "beforeDevCommand": "yarn dev",
     "devPath": "http://localhost:5173",
-    "distDir": "../dist"
+    "distDir": "../dist",
+    "withGlobalTauri" : true
   },
   "package": {
     "productName": "TaTa",
-    "version": "0.0.2"
+    "version": "0.0.3"
   },
   "tauri": {
     "allowlist": {
@@ -127,13 +128,13 @@
     "windows": [
       {
         "fullscreen": false,
-        "height": 700,
+        "height": 750,
         "resizable": true,
         "title": "TaTaRepair",
-        "width": 900,
+        "width": 1000,
         "decorations": false,
-        "minWidth": 900,
-        "minHeight": 700,
+        "minWidth": 800,
+        "minHeight": 500,
         "center": true,
         "transparent": true
       }
