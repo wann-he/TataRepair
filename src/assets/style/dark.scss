@@ -1,6 +1,6 @@
 html.dark {
   --af-header-bg-color: #141414;
-  --af-bg-color: #000000;
+  --af-bg-color: #141414;
   --af-default-font-color: rgba(235, 235, 235, 0.6);
   --af-siteName-color: #ffffff;
   --af-mouseEnter-color: #ffffff;
@@ -30,20 +30,24 @@ html.dark {
     }
     .el-menu-item.is-active {
       color: #ffffff;
+      .title-content {
+        padding-left: 10px;
+        color: #409eff  !important;
+      }
     }
-    .el-menu .el-menu-item.is-active {
-      background-color: #003a8c !important;
-    }
-    .el-menu-item.is-active:hover {
-      background-color: #003a8c !important;
-    }
-    .el-menu-item:hover {
-      background-color: #434343 !important;
-      color: #ffffff;
-    }
-    .el-menu-item.is-active {
-      background-color: #003a8c;
-    }
+    //.el-menu .el-menu-item.is-active {
+    //  background-color: #003a8c !important;
+    //}
+    //.el-menu-item.is-active:hover {
+    //  background-color: #003a8c !important;
+    //}
+    //.el-menu-item:hover {
+    //  background-color: #434343 !important;
+    //  color: #ffffff;
+    //}
+    //.el-menu-item.is-active {
+    //  background-color: #003a8c;
+    //}
   }
   // .el-dropdown-menu {
   //   background: var(--af-bg-color);

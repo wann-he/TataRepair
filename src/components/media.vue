@@ -141,6 +141,7 @@
                             <el-input
                                 v-model="answer"
                                 placeholder="命令行可以自行修改，确保命令行以 ffmpeg 开头，否则无法执行"
+                                clearable
                             />
                         </el-form-item>
                     </el-col>
@@ -198,7 +199,6 @@
                     </el-col>
                 </el-row>
             </el-tab-pane>
-
         </el-tabs>
     </el-scrollbar>
 </template>

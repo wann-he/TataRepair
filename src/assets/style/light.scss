@@ -21,28 +21,32 @@ html {
     background-color: var(--af-main-bg-color);
   }
   .el-menu {
-    background-color: #001529;
+    background-color: #ffffff;
     --el-menu-text-color: rgb(192, 196, 204);
     .el-sub-menu__title {
       color: rgb(192, 196, 204);
-      background-color: #001529;
-    }
-    .el-menu-item.is-active {
-      color: #ffffff;
-    }
-    .el-menu .el-menu-item.is-active {
-      background-color: #409eff !important;
-    }
-    .el-menu-item.is-active:hover {
-      background-color: #409eff !important;
-    }
-    .el-menu-item:hover {
-      background-color: #434343 !important;
-      color: #ffffff;
-    }
-    .el-menu-item.is-active {
       background-color: #409eff;
     }
+    .el-menu-item.is-active {
+      color: #409eff;
+      .title-content {
+        padding-left: 10px;
+        color: #409eff  !important;
+      }
+    }
+    //.el-menu .el-menu-item.is-active {
+    //  background-color: #409eff !important;
+    //}
+    //.el-menu-item.is-active:hover {
+    //  background-color: #409eff !important;
+    //}
+    //.el-menu-item:hover {
+    //  background-color: #434343 !important;
+    //  color: #ffffff;
+    //}
+    //.el-menu-item.is-active {
+    //  background-color: #409eff;
+    //}
   }
   .login-wrapper{
     background-size: 100% 100%;
