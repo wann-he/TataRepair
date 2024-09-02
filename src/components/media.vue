@@ -582,7 +582,11 @@ async function start() {
             }, videos.value)
             .then((res) => {
                 console.log(res)
-                sendNotify(`批量格式转换完成`)
+                if (res.rcode == 0) {
+                    sendNotify((res.failedNum && res.failedNum > 0) ? `批量格式转换完成,失败${res.failedNum}个` : '批量格式转换完成')
+                } else {
+                    sendNotify(`批量格式转换失败`)
+                }
             })
             .catch((reason) => {
                 console.log('Error when video2Audio...:${reason}', reason)

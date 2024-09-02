@@ -83,17 +83,30 @@ export async function convert(mediaConf: MediaConfig, medias: Videoo[]): Promise
         console.log('basename =====> ' + vd.name)
         console.log('path =====> ' + vd.path)
         console.log('url =====> ' + vd.url)
-        let command: Command = Command.sidecar("bin/ffmpeg/ffmpeg",
-            [
-                '-i', vd.path,
-                '-c:v', vd.codingMode || 'libx264',
-                '-preset', 'medium',
-                '-crf', '23',
-                '-c:a', 'aac',
-                '-b:a', '128k',
-                `${out_path}\\${vd.name}${vd.suffix}.${mediaConf.out_video_scheme}`]
-            , {encoding: 'utf8'});
-        // ffmpeg -i "i.mov" -c:v libx264 -preset medium -crf 23 -c:a aac -b:a 128k "o.mp4"
+        let command: Command;
+        if (vd.bitrate) {
+            command = Command.sidecar("bin/ffmpeg/ffmpeg",
+                ['-y',
+                    '-i', vd.path,
+                    '-c:v', vd.codingMode || 'libx264',
+                    '-b:v', vd.bitrate,
+                    '-c:a', 'aac',
+                    '-b:a', '128k',
+                    `${out_path}\\${vd.name}${vd.suffix}.${mediaConf.out_video_scheme}`]
+                , {encoding: 'utf8'});
+        } else {
+            command = Command.sidecar("bin/ffmpeg/ffmpeg",
+                ['-y',
+                    '-i', vd.path,
+                    '-c:v', vd.codingMode || 'libx264',
+                    '-preset', 'medium',
+                    '-crf', '23',
+                    '-c:a', 'aac',
+                    '-b:a', '128k',
+                    `${out_path}\\${vd.name}${vd.suffix}.${mediaConf.out_video_scheme}`]
+                , {encoding: 'utf8'});
+        }
+        // ffmpeg -y -i "i.mov" -c:v libx264 -preset medium -crf 23 -c:a aac -b:a 128k "o.mp4"
         console.log(command)
 
         command.on('close', () => console.log('任务完成 -> convert'))
@@ -101,20 +114,19 @@ export async function convert(mediaConf: MediaConfig, medias: Videoo[]): Promise
         command.stdout.on('data', line => console.log(`command stdout: "${line}"`));
         command.stderr.on('data', (line) => console.log(`command stderr: "${line}"`))
         const output = await command.execute()
-            .then(() => {
-                vd.stages?.forEach((stage) => {
-                    stage.progress = 100;
-                    stage.status = 'success'
-                })
-            })
-            .catch((reason) => {
-                failedNum++;
-            })
         console.log('output ==> ', output)
+        if (output.code !== 0) {
+            failedNum++;
+        } else {
+            vd.stages?.forEach((stage) => {
+                stage.progress = 100;
+                stage.status = 'success'
+            })
+        }
         console.log('============ convert任务完成 ============')
     }
 
-    return {rcode: 1, failedNum: failedNum};
+    return {rcode: 0, failedNum: failedNum};
 }
 
 export async function executeCustomCommand(custom_command: string): Promise<Result> {

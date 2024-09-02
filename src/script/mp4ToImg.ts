@@ -22,6 +22,7 @@ export interface Videoo {
     alt?: string; // 可选的属性
     stages?: Stage[];
     duration?: string; // 时长
+    bitrate?: string; //  比特率
     frameRate?: string; // 帧率
     resolution?: string; // 分辨率
     frames?: string;// 总帧数
@@ -258,6 +259,9 @@ export async function getVideoInfo(vd: Videoo) {
     const duration = output.match(/Duration: (.*?),/);
     let videoDuration = duration ? duration[1] : ''; // 00:00:05.02
 
+    const bitrate = output.match(/bitrate: (.*?) kb/);
+    let bitrateStr = bitrate ? bitrate[1].trim() + 'k' : '';
+
     const resolutionFrameRate = output.match(/, (\d+x\d+),/);
     let videoResolution = resolutionFrameRate ? resolutionFrameRate[1] : ''; // 2560x1440
 
@@ -267,6 +271,7 @@ export async function getVideoInfo(vd: Videoo) {
     const totalFrames = output.match(/frame=(\s*\d*)/);
     let videoTotalFrames = totalFrames ? totalFrames[1].trim() : undefined; // e.g., 102
 
+    vd.bitrate = bitrateStr;
     vd.duration = videoDuration;
     vd.resolution = videoResolution;
     vd.frameRate = rate;

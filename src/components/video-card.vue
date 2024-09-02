@@ -19,6 +19,7 @@
                 <span class="info">分辨率：{{ video.resolution }}</span>
                 <span class="info">时长：{{ video.duration }}</span>
                 <span class="info">帧率：{{ video.frameRate }}</span>
+                <span class="info">比特率：{{ video.bitrate }}</span>
             </div>
             <div class="stages">
                 <div v-for="(stage, index) in video.stages" :key="index" class="stage">
